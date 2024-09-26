@@ -27,6 +27,48 @@ h2 {
     color: #4a90e2;
 }
 
+/* Announcements section */
+.announcements-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.announcements-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.announcement-item {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.announcement-item:hover {
+    transform: translateY(-5px);
+}
+
+.announcement-item h3 {
+    color: #4a90e2;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.announcement-content {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.announcement-meta {
+    font-size: 0.9rem;
+    color: #888;
+}
+
 /* Current fees styles */
 .current-fees {
     background-color: #1e1e1e;
@@ -81,7 +123,7 @@ h2 {
 }
 
 .debtors-section p {
-    color:white;
+    color: white;
 }
 
 .debtors-list {
@@ -112,14 +154,6 @@ h2 {
     letter-spacing: 0.5px;
 }
 
-.debtor-card p {
-    color: #f44336;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 .debtor-amount {
     color: #f44336;
     font-weight: bold;
@@ -129,8 +163,9 @@ h2 {
     text-align: right;
 }
 
-/* Income section styles */
-.income-section {
+/* Income and Expenses section styles */
+.income-section,
+.expenses-section {
     background-color: #1e1e1e;
     border-radius: 12px;
     padding: 1.5rem;
@@ -174,17 +209,18 @@ h2 {
 
 .filter-controls button:hover {
     background-color: #3a80d2;
-    transform: translateY(-2px);
 }
 
-.income-graph {
+.income-graph,
+.expenses-graph {
     background-color: #2a2a2a;
     border-radius: 8px;
     padding: 1.25rem;
     margin-bottom: 1.5rem;
 }
 
-.income-summary {
+.income-summary,
+.expenses-summary {
     color: #ffffff;
     font-size: 1.2rem;
     font-weight: bold;
@@ -211,7 +247,8 @@ h2 {
     .filter-controls label,
     .filter-controls select,
     .filter-controls button,
-    .income-summary {
+    .income-summary,
+    .expenses-summary {
         font-size: 1rem;
     }
 
@@ -232,20 +269,17 @@ h2 {
         margin-right: 0;
     }
 
-    .debtor-card {
-        padding: 1.25rem;
-    }
-
-    .debtor-card h3 {
-        font-size: 1.2rem;
-    }
-
-    .debtor-amount {
-        font-size: 1.1rem;
+    .announcement-item {
+        padding: 1rem;
     }
 }
 
 @media (max-width: 480px) {
+    .dashboard-container {
+        padding: 0.75rem;
+        margin-top: 40px;
+    }
+
     h1 {
         font-size: 1.75rem;
     }
@@ -254,13 +288,11 @@ h2 {
         font-size: 1.25rem;
     }
 
-    .dashboard-container {
-        padding: 0.75rem;
-    }
-
+    .announcements-section,
     .current-fees,
     .debtors-section,
-    .income-section {
+    .income-section,
+    .expenses-section {
         padding: 1rem;
     }
 
@@ -269,46 +301,42 @@ h2 {
     .filter-controls label,
     .filter-controls select,
     .filter-controls button,
-    .income-summary {
+    .income-summary,
+    .expenses-summary {
+        font-size: 0.9rem;
+    }
+
+    .debtor-card {
+        padding: 1rem;
+    }
+
+    .debtor-amount {
+        font-size: 1rem;
+    }
+
+    .income-graph,
+    .expenses-graph {
+        padding: 0.75rem;
+    }
+
+    .announcement-item {
+        padding: 0.75rem;
+    }
+
+    .announcement-item h3 {
+        font-size: 1.1rem;
+    }
+
+    .announcement-content,
+    .announcement-meta {
         font-size: 0.9rem;
     }
 }
 
-/* Existing styles remain unchanged */
-
-.expenses-section {
-    background-color: #1e1e1e;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.announcements-section p {
+    color:white;
 }
 
-.expenses-graph {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-}
-
-.expenses-summary {
-    color: #ffffff;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    /* Existing media query styles */
-    .expenses-summary {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    /* Existing media query styles */
-    .expenses-section {
-        padding: 1rem;
-    }
+::marker {
+    color: white;
 }

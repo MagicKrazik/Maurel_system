@@ -2,18 +2,284 @@
 .admin-panel {
     max-width: 1200px;
     margin: 85px auto 30px;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border-radius: 8px;
+    padding: 30px;
+    background-color: #2A2B2A;
+    border-radius: 15px;
     color: #ffffff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 h1, h2, h3 {
     color: #4a90e2;
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
     text-align: center;
+    font-weight: 600;
 }
 
+h1 {
+    font-size: 2.5rem;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+.announcements-section {
+    margin-top: 30px;
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Announcement form styles */
+.announcements-section form {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.announcements-section form h3 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.announcements-section form p {
+    margin-bottom: 1.5rem;
+}
+
+.announcements-section form label {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.announcements-section form input[type="text"],
+.announcements-section form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #3a3a3a;
+    border: 1px solid #4a4a4a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.announcements-section form input[type="text"]:focus,
+.announcements-section form textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.announcements-section form input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.announcements-section form button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1.5rem;
+}
+
+.announcements-section form button[type="submit"]:hover {
+    background-color: #3a80d2;
+    transform: translateY(-2px);
+}
+
+/* Existing announcements styles */
+.announcements-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.announcements-section li {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.announcements-section li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.announcements-section li h3 {
+    color: #4a90e2;
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+    text-align: left;
+}
+
+.announcements-section li p {
+    color: #ffffff;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.announcements-section li .announcement-meta {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+.announcements-section li .announcement-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.announcements-section li form {
+    display: inline-block;
+}
+
+.announcements-section li button {
+    padding: 0.5rem 1rem;
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.announcements-section li button[name="delete_announcement"] {
+    background-color: #f44336;
+}
+
+.announcements-section li button:hover {
+    background-color: #3a80d2;
+    transform: translateY(-2px);
+}
+
+.announcements-section li button[name="delete_announcement"]:hover {
+    background-color: #d32f2f;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admin-panel {
+        margin-top: 70px;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .announcements-section {
+        padding: 1.5rem;
+    }
+
+    .announcements-section form,
+    .announcements-section li {
+        padding: 1.25rem;
+    }
+
+    .announcements-section form input[type="text"],
+    .announcements-section form textarea,
+    .announcements-section form button[type="submit"] {
+        font-size: 0.95rem;
+    }
+
+    .announcements-section li h3 {
+        font-size: 1.2rem;
+    }
+
+    .announcements-section li p {
+        font-size: 0.95rem;
+    }
+
+    .announcements-section li button {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        margin-top: 60px;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .announcements-section {
+        padding: 1rem;
+    }
+
+    .announcements-section form,
+    .announcements-section li {
+        padding: 1rem;
+    }
+
+    .announcements-section form input[type="text"],
+    .announcements-section form textarea,
+    .announcements-section form button[type="submit"] {
+        font-size: 0.9rem;
+    }
+
+    .announcements-section li h3 {
+        font-size: 1.1rem;
+    }
+
+    .announcements-section li p {
+        font-size: 0.9rem;
+    }
+
+    .announcements-section li button {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+
+    .announcements-section li .announcement-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .announcements-section li .announcement-actions button {
+        width: 100%;
+    }
+}
+
+/* The apartments-section styles remain unchanged */
 .apartments-section {
     margin-top: 30px;
 }
@@ -81,60 +347,19 @@ h1, h2, h3 {
     font-weight: bold;
 }
 
-.update-btn {
-    width: 100%;
-    padding: 10px;
+button.update-btn {
+    padding: 0.5rem 1rem;
     background-color: #4a90e2;
     color: #ffffff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
-.update-btn:hover {
-    background-color: #3a7bc8;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .admin-panel {
-        margin-top: 70px;
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 24px;
-    }
-
-    h2 {
-        font-size: 20px;
-    }
-
-    .apartments-list {
-        grid-template-columns: 1fr;
-    }
-
-    .fee-group {
-        grid-template-columns: 1fr;
-    }
-
-    .fee-input {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .admin-panel {
-        margin-top: 60px;
-        padding: 10px;
-    }
-
-    h1 {
-        font-size: 20px;
-    }
-
-    h2 {
-        font-size: 18px;
-    }
+button.update-btn:hover {
+    background-color: #3a80d2;
+    transform: translateY(-2px);
 }

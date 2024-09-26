@@ -1,37 +1,51 @@
-// panel.js
 document.addEventListener('DOMContentLoaded', function() {
-    const apartmentCards = document.querySelectorAll('.apartment-card');
-    
-    apartmentCards.forEach(card => {
-        const feeInputs = card.querySelectorAll('.fee-input');
-        const totalValueSpan = card.querySelector('.total-value');
-        const paidAmountInput = card.querySelector('.paid-amount-input');
-        const pendingValueSpan = card.querySelector('.pending-value');
-        
-        function updateValues() {
-            let total = 0;
-            feeInputs.forEach(input => {
-                if (input.name !== 'paid_amount') {
-                    total += parseFloat(input.value) || 0;
+    // Announcement form submission
+    const announcementForm = document.getElementById('announcement-form');
+    if (announcementForm) {
+        announcementForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error creating announcement: ' + JSON.stringify(data.errors));
                 }
             });
-            
-            const paidAmount = parseFloat(paidAmountInput.value) || 0;
-            const pendingAmount = Math.max(total - paidAmount, 0);
-            
-            totalValueSpan.textContent = total.toFixed(2);
-            pendingValueSpan.textContent = pendingAmount.toFixed(2);
-            
-            // Update colors based on values
-            pendingValueSpan.classList.toggle('negative', pendingAmount > 0);
-            pendingValueSpan.classList.toggle('positive', pendingAmount === 0);
-        }
-        
-        feeInputs.forEach(input => {
-            input.addEventListener('input', updateValues);
         });
-        
-        // Initial calculation
-        updateValues();
+    }
+
+    // Edit announcement
+    const editButtons = document.querySelectorAll('.edit-announcement');
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const announcementId = this.dataset.id;
+            const form = document.querySelector(`#edit-form-${announcementId}`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        });
     });
+
+    // Delete announcement
+    const deleteButtons = document.querySelectorAll('.delete-announcement');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to delete this announcement?')) {
+                const form = this.closest('form');
+                form.submit();
+            }
+        });
+    });
+
+    // ... (rest of the existing JavaScript) ...
 });

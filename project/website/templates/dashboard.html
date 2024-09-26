@@ -13,6 +13,24 @@
 <div class="dashboard-container">
     <h1>Dashboard de Control</h1>
 
+    <div class="announcements-section">
+        <h2>Anuncios</h2>
+        {% if active_announcements %}
+            <ul class="announcements-list">
+                {% for announcement in active_announcements %}
+                    <li class="announcement-item">
+                        <h3>{{ announcement.title }}</h3>
+                        <p>{{ announcement.content }}</p>
+                        <p>Publicado el: {{ announcement.created_at|date:"d/m/Y H:i" }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay anuncios activos en este momento.</p>
+        {% endif %}
+    </div>
+    
+
     {% if not user.is_superuser and current_fees %}
     <div class="current-fees">
         <h2>Cuota de {{ current_month|date:"F Y" }}: {{ user.apartment_number }}</h2>

@@ -11,6 +11,54 @@
 <div class="admin-panel">
     <h1>Panel de Administración</h1>
 
+
+    <div class="announcements-section">
+        <h2>Tablero de Noticias</h2>
+        
+        <!-- Create Announcement Form -->
+        <form class="announcement-form" method="post" action="{% url 'panel' %}">
+            {% csrf_token %}
+            <h3>Crear Nuevo Anuncio</h3>
+            {{ announcement_form.as_p }}
+            <button type="submit" name="create_announcement">Crear Anuncio</button>
+        </form>
+        
+        {% if announcements %}
+            <ul class="announcements-list">
+                {% for announcement in announcements %}
+                    <li class="announcement-item">
+                        <h3>{{ announcement.title }}</h3>
+                        <p>{{ announcement.content }}</p>
+                        <p>Creado el: {{ announcement.created_at|date:"d/m/Y H:i" }}</p>
+                        <p>Estado: {% if announcement.is_active %}Activo{% else %}Inactivo{% endif %}</p>
+                        
+                        <h3>Editar Anuncio</h3>
+                        <!-- Edit Announcement Form -->
+                        <form method="post" action="{% url 'panel' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="announcement_id" value="{{ announcement.id }}">
+                            <input type="text" name="title" value="{{ announcement.title }}">
+                            <textarea name="content">{{ announcement.content }}</textarea>
+                            <input type="checkbox" name="is_active" {% if announcement.is_active %}checked{% endif %}>
+                            <button type="submit" name="edit_announcement">Editar</button>
+                        </form>
+                        
+                        <!-- Delete Announcement Form -->
+                        <form method="post" action="{% url 'panel' %}" onsubmit="return confirm('¿Está seguro de que desea eliminar este anuncio?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="announcement_id" value="{{ announcement.id }}">
+                            <button type="submit" name="delete_announcement">Eliminar</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay anuncios disponibles.</p>
+        {% endif %}
+    </div>
+
+
+
     <div class="apartments-section">
         <h2>Estado de Pagos por Departamento - {{ current_month|date:"F Y" }}</h2>
         <div class="apartments-list">

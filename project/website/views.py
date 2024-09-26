@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import CustomUser, MonthlyFees
+from .models import CustomUser, MonthlyFees, Announcement
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from .forms import UserProfileForm, SpanishPasswordChangeForm
@@ -37,6 +37,8 @@ from django.db import transaction
 from .forms import ExpenseUploadForm
 from .models import ExpenseReport
 from django.http import JsonResponse
+from .forms import AnnouncementForm
+
 
 
 
@@ -122,43 +124,6 @@ def logout_view(request):
 
 
 
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def panel(request):
-    apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
-    current_month = timezone.now().date().replace(day=1)
-    
-    if request.method == 'POST':
-        apartment_id = request.POST.get('apartment_id')
-        user = CustomUser.objects.get(id=apartment_id)
-        
-        fees, created = MonthlyFees.objects.get_or_create(user=user, month=current_month)
-        
-        fees.gas_fee = Decimal(request.POST.get('gas_fee', 0))
-        fees.maintenance_fee = Decimal(request.POST.get('maintenance_fee', 1200))
-        fees.parking_fee = Decimal(request.POST.get('parking_fee', 0))
-        fees.extra_fee = Decimal(request.POST.get('extra_fee', 500))
-        fees.past_due = Decimal(request.POST.get('past_due', 0))
-        fees.is_paid = request.POST.get('is_paid') == 'on'
-        fees.paid_amount = Decimal(request.POST.get('paid_amount', 0))
-        fees.save()
-        
-        # Update is_debtor status
-        user.is_debtor = request.POST.get('is_debtor') == 'on'
-        user.save()
-        
-        messages.success(request, f'Fees updated for Apartment {user.apartment_number}')
-        return redirect('panel')
-    
-    for apartment in apartments:
-        MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
-    
-    context = {
-        'apartments': apartments,
-        'current_month': current_month,
-    }
-    return render(request, 'panel.html', context)
-
 
 @login_required
 def dashboard(request):
@@ -215,6 +180,8 @@ def dashboard(request):
             'current_month': current_date,
         }
     
+    active_announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')
+
     context.update({
         'debtors': debtors,
         'income_data': income_data,
@@ -225,6 +192,7 @@ def dashboard(request):
         'selected_month': selected_month,
         'selected_date': selected_date,
         'date_range': date_range,
+        'active_announcements': active_announcements,
     })
 
     return render(request, 'dashboard.html', context)
@@ -265,8 +233,7 @@ def pagos(request):
                 document_type='pagos_mantenimiento',
                 file=payment.report_file,
                 date=payment.payment_date,
-                uploaded_by=request.user,
-                related_user=request.user
+                uploaded_by=request.user
             )
 
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -438,8 +405,8 @@ def documentos(request):
     # Group documents by type
     grouped_documents = {
         'mantenimiento': documents.filter(document_type='mantenimiento'),
-        'pagos_mantenimiento': filtered_documents.filter(document_type='pagos_mantenimiento').order_by('related_user__username', '-date'),
-        'gastos_pasivos': filtered_documents.filter(document_type='gastos_pasivos').order_by('-date'),
+        'pagos_mantenimiento': filtered_documents.filter(document_type='pagos_mantenimiento'),
+        'gastos_pasivos': filtered_documents.filter(document_type='gastos_pasivos'),
         'minutas': documents.filter(document_type='minutas'),
         'reglamentos': documents.filter(document_type='reglamentos'),
         'otros': documents.filter(document_type='otros'),
@@ -508,3 +475,67 @@ def gastos(request):
         form = ExpenseUploadForm()
     
     return render(request, 'gastos.html', {'form': form})
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def panel(request):
+    apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
+    current_month = timezone.now().date().replace(day=1)
+    announcements = Announcement.objects.all().order_by('-created_at')
+    
+    if request.method == 'POST':
+        if 'create_announcement' in request.POST:
+            form = AnnouncementForm(request.POST)
+            if form.is_valid():
+                announcement = form.save(commit=False)
+                announcement.created_by = request.user
+                announcement.save()
+                messages.success(request, 'Anuncio creado exitosamente.')
+                return redirect('panel')
+        elif 'edit_announcement' in request.POST:
+            announcement_id = request.POST.get('announcement_id')
+            announcement = get_object_or_404(Announcement, id=announcement_id)
+            form = AnnouncementForm(request.POST, instance=announcement)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Anuncio actualizado exitosamente.')
+                return redirect('panel')
+        elif 'delete_announcement' in request.POST:
+            announcement_id = request.POST.get('announcement_id')
+            announcement = get_object_or_404(Announcement, id=announcement_id)
+            announcement.delete()
+            messages.success(request, 'Anuncio eliminado exitosamente.')
+            return redirect('panel')
+        else:
+            # Existing code for handling apartment fees...
+            apartment_id = request.POST.get('apartment_id')
+            user = CustomUser.objects.get(id=apartment_id)
+            
+            fees, created = MonthlyFees.objects.get_or_create(user=user, month=current_month)
+            
+            fees.gas_fee = Decimal(request.POST.get('gas_fee', 0))
+            fees.maintenance_fee = Decimal(request.POST.get('maintenance_fee', 1200))
+            fees.parking_fee = Decimal(request.POST.get('parking_fee', 0))
+            fees.extra_fee = Decimal(request.POST.get('extra_fee', 500))
+            fees.past_due = Decimal(request.POST.get('past_due', 0))
+            fees.is_paid = request.POST.get('is_paid') == 'on'
+            fees.paid_amount = Decimal(request.POST.get('paid_amount', 0))
+            fees.save()
+            
+            user.is_debtor = request.POST.get('is_debtor') == 'on'
+            user.save()
+            
+            messages.success(request, f'Fees updated for Apartment {user.apartment_number}')
+    
+    for apartment in apartments:
+        MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
+    
+    context = {
+        'apartments': apartments,
+        'current_month': current_month,
+        'announcements': announcements,
+        'announcement_form': AnnouncementForm(),
+    }
+    return render(request, 'panel.html', context)

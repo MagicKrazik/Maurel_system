@@ -3,7 +3,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django import forms
 from .models import CustomUser
 from django.core.validators import RegexValidator
-from .models import PaymentReport, ComplaintSuggestion, Document, ExpenseReport
+from .models import PaymentReport, ComplaintSuggestion, Document, ExpenseReport, Announcement
 
 class UserProfileForm(forms.ModelForm):
     phone_number = forms.CharField(
@@ -131,4 +131,18 @@ class ExpenseUploadForm(forms.ModelForm):
         }
         widgets = {
             'expense_date': forms.DateInput(attrs={'type': 'date'}),
+        }        
+
+
+class AnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = Announcement
+        fields = ['title', 'content', 'is_active']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 4}),
+        }
+        labels = {
+            'title': 'Título',
+            'content': 'Contenido',
+            'is_active': 'Activo',
         }        

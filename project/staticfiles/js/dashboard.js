@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing functionality for fee items
+    // Fee items functionality
     const feeItems = document.querySelectorAll('.fee-item');
     
     feeItems.forEach(item => {
@@ -15,22 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Income chart functionality
-    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-    let incomeChart = new Chart(incomeCtx, {
+    // Chart configuration
+    const chartConfig = {
         type: 'bar',
-        data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-            datasets: [{
-                label: 'Ingresos mensuales',
-                data: yearlyIncomeData,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -41,63 +31,88 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             plugins: {
-                title: {
-                    display: true,
-                    text: `Ingresos para ${selectedDate}`
+                legend: {
+                    display: false
                 }
             }
         }
-    });
+    };
+
+    // Income chart functionality
+    const incomeCtx = document.getElementById('incomeChart');
+    if (incomeCtx) {
+        const incomeChart = new Chart(incomeCtx, {
+            ...chartConfig,
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [{
+                    label: 'Ingresos mensuales',
+                    data: yearlyIncomeData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+    }
 
     // Expenses chart functionality
-    const expensesCtx = document.getElementById('expensesChart').getContext('2d');
-    let expensesChart = new Chart(expensesCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-            datasets: [{
-                label: 'Gastos mensuales',
-                data: yearlyExpensesData,
-                backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Monto ($)'
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: `Gastos para ${selectedDate}`
-                }
+    const expensesCtx = document.getElementById('expensesChart');
+    if (expensesCtx) {
+        const expensesChart = new Chart(expensesCtx, {
+            ...chartConfig,
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [{
+                    label: 'Gastos mensuales',
+                    data: yearlyExpensesData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
             }
+        });
+    }
+
+    // Filter functionality
+    const dateFilter = document.getElementById('date-filter');
+    const filterButton = document.getElementById('filter-button');
+
+    if (dateFilter && filterButton) {
+        filterButton.addEventListener('click', function() {
+            const selectedDate = dateFilter.value;
+            if (selectedDate) {
+                window.location.href = `?date=${selectedDate}`;
+            }
+        });
+
+        // Enable keyboard navigation for the date filter
+        dateFilter.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                filterButton.click();
+            }
+        });
+    }
+
+    // Responsive design adjustments
+    function handleResize() {
+        const width = window.innerWidth;
+        if (width <= 768) {
+            // Adjust chart options for smaller screens
+            Chart.defaults.font.size = 10;
+            if (incomeChart) incomeChart.options.scales.x.ticks.maxRotation = 90;
+            if (expensesChart) expensesChart.options.scales.x.ticks.maxRotation = 90;
+        } else {
+            // Reset chart options for larger screens
+            Chart.defaults.font.size = 12;
+            if (incomeChart) incomeChart.options.scales.x.ticks.maxRotation = 0;
+            if (expensesChart) expensesChart.options.scales.x.ticks.maxRotation = 0;
         }
-    });
-
-    // Add event listeners for the filter forms
-    const incomeFilterForm = document.getElementById('income-filter-form');
-    const expensesFilterForm = document.getElementById('expenses-filter-form');
-
-    if (incomeFilterForm) {
-        incomeFilterForm.addEventListener('submit', function(event) {
-            // The form will now submit normally, no need to prevent default
-            // or manually update the URL
-        });
+        if (incomeChart) incomeChart.update();
+        if (expensesChart) expensesChart.update();
     }
 
-    if (expensesFilterForm) {
-        expensesFilterForm.addEventListener('submit', function(event) {
-            // The form will now submit normally, no need to prevent default
-            // or manually update the URL
-        });
-    }
+    // Initial call and event listener for resize
+    handleResize();
+    window.addEventListener('resize', handleResize);
 });

@@ -129,8 +129,6 @@ class ComplaintSuggestion(models.Model):
 class Document(models.Model):
     DOCUMENT_TYPES = [
         ('mantenimiento', 'Mantenimiento y Cotizaciones'),
-        ('pagos_mantenimiento', 'Pagos de Mantenimiento'),
-        ('gastos_pasivos', 'Gastos y Pasivos'),
         ('minutas', 'Minutas'),
         ('reglamentos', 'Reglamentos'),
         ('otros', 'Otros'),
@@ -142,7 +140,6 @@ class Document(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
     date = models.DateField()  # The date associated with the document
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    related_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='related_documents')
 
     def __str__(self):
         return self.title
@@ -174,3 +171,19 @@ class ExpenseReport(models.Model):
 
     def __str__(self):
         return f"{self.expense_concept} - {self.expense_date.strftime('%B %Y')}"        
+    
+
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
