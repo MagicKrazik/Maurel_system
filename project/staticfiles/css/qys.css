@@ -1,0 +1,290 @@
+/* QyS styles */
+.qys-container {
+    padding: 2rem;
+    margin-top: 70px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #2A2B2A;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2 {
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+    color: #4a90e2;
+}
+
+.qys-form-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #2c2c2c;
+    color: #ffffff;
+}
+
+.submit-btn {
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #3a80d2;
+}
+
+.submission-status {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.submission-status.success {
+    background-color: #4CAF50;
+    color: #ffffff;
+}
+
+.submission-status.error {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+.all-submissions {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.qys-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.qys-table th,
+.qys-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.qys-table th {
+    background-color: #2c2c2c;
+    color: #4a90e2;
+}
+
+.qys-table tr:hover {
+    background-color: #2c2c2c;
+}
+
+.status-form select {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .qys-container {
+        padding: 1rem;
+        margin-top: 50px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .qys-table {
+        font-size: 0.9rem;
+    }
+
+    .qys-table th,
+    .qys-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .qys-container {
+        padding: 0.75rem;
+    }
+
+    .qys-form-section,
+    .all-submissions {
+        padding: 1rem;
+    }
+
+    .qys-table {
+        font-size: 0.8rem;
+    }
+}
+
+/* ... (existing styles) */
+
+.qys-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+td {
+    color: white;
+}
+
+.qys-table th,
+.qys-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.qys-table th {
+    background-color: #2c2c2c;
+    color: #4a90e2;
+}
+
+.qys-table tr:hover {
+    background-color: #2c2c2c;
+}
+
+.status-form select {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* New status color styles */
+.qys-table .status-atendido {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.qys-table .status-en_progreso {
+    color: #FFA500;
+    font-weight: bold;
+}
+
+.qys-table .status-pendiente {
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* ... (existing responsive styles) */
+
+@media (max-width: 768px) {
+    .qys-table {
+        font-size: 0.8rem;
+    }
+
+    .qys-table th,
+    .qys-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .qys-table {
+        font-size: 0.7rem;
+    }
+
+    .qys-table th,
+    .qys-table td {
+        padding: 0.3rem;
+    }
+}
+
+.status-atendido {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.status-en_progreso {
+    color: #FFA500;
+    font-weight: bold;
+}
+
+.status-pendiente {
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* ... (existing responsive styles) */
+
+@media (max-width: 768px) {
+    .qys-table {
+        font-size: 0.8rem;
+    }
+
+    .qys-table th,
+    .qys-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .qys-table {
+        font-size: 0.7rem;
+    }
+
+    .qys-table th,
+    .qys-table td {
+        padding: 0.3rem;
+    }
+}

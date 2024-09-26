@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Actualización de Perfil{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/initial_profile_update.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-update-container">
+    <h2>¡Bienvenido! Por favor, actualice su perfil</h2>
+    <form method="post" id="profile-update-form">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3>Cambiar su Contraseña</h3>
+            {{ password_form.as_p }}
+        </div>
+        <div class="form-section">
+            <h3>Actualizar su Información de Contacto</h3>
+            {{ profile_form.as_p }}
+        </div>
+        <button type="submit" class="update-button">Actualizar Perfil</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/initial_profile_update.js' %}"></script>
+{% endblock %}

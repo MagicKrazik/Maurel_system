@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+{% endblock %}
+
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Dashboard de Control</h1>
+
+    {% if not user.is_superuser and current_fees %}
+    <div class="current-fees">
+        <h2>Cuota de {{ current_month|date:"F Y" }}: {{ user.apartment_number }}</h2>
+        <div class="fees-grid">
+            <div class="fee-item">
+                <span>Gas:</span>
+                <span>${{ current_fees.gas_fee }}</span>
+            </div>
+            <div class="fee-item">
+                <span>Mantenimiento:</span>
+                <span>${{ current_fees.maintenance_fee }}</span>
+            </div>
+            <div class="fee-item">
+                <span>Estacionamiento:</span>
+                <span>${{ current_fees.parking_fee }}</span>
+            </div>
+            <div class="fee-item">
+                <span>Extra:</span>
+                <span>${{ current_fees.extra_fee }}</span>
+            </div>
+            <div class="fee-item">
+                <span>Deuda anterior:</span>
+                <span>${{ current_fees.past_due }}</span>
+            </div>
+            <div class="fee-item total">
+                <span>Total a pagar:</span>
+                <span>${{ current_fees.total_fee }}</span>
+            </div>
+            <div class="fee-item">
+                <span>Monto pagado:</span>
+                <span>${{ current_fees.paid_amount }}</span>
+            </div>
+            <div class="fee-item status">
+                <span>Estado:</span>
+                <span class="{% if current_fees.is_paid %}paid{% else %}unpaid{% endif %}">
+                    {% if current_fees.is_paid %}Pagado{% else %}No pagado{% endif %}
+                </span>
+            </div>
+            <div class="fee-item account-status">
+                <span>Estado de cuenta actual:</span>
+                <span class="{% if current_fees.remaining_amount > 0 %}negative{% else %}positive{% endif %}">
+                    ${{ current_fees.remaining_amount }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="debtors-section">
+        <h2>Deudores Actuales</h2>
+        {% if debtors %}
+        <div class="debtors-list">
+            {% for debtor in debtors %}
+            <div class="debtor-card">
+                <h3>Departamento {{ debtor.apartment_number }}</h3>
+                <p>Pago pendiente: <span class="debtor-amount">${{ debtor.monthly_fees.last.remaining_amount|default:0 }}</span></p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No hay deudores en este momento.</p>
+        {% endif %}
+    </div>
+
+    <div class="income-section">
+        <h2>Ingresos</h2>
+        <div class="filter-controls">
+            <form id="income-filter-form" method="get">
+                <label for="income-date">Seleccionar mes y año:</label>
+                <select name="date" id="income-date">
+                    {% for year, month in date_range %}
+                    {% with month|stringformat:"02d" as month_string %}
+                    <option value="{{ year }}-{{ month_string }}" {% if year == selected_year and month == selected_month %}selected{% endif %}>
+                        {% if month_string == "01" %}Enero {{ year }}
+                        {% elif month_string == "02" %}Febrero {{ year }}
+                        {% elif month_string == "03" %}Marzo {{ year }}
+                        {% elif month_string == "04" %}Abril {{ year }}
+                        {% elif month_string == "05" %}Mayo {{ year }}
+                        {% elif month_string == "06" %}Junio {{ year }}
+                        {% elif month_string == "07" %}Julio {{ year }}
+                        {% elif month_string == "08" %}Agosto {{ year }}
+                        {% elif month_string == "09" %}Septiembre {{ year }}
+                        {% elif month_string == "10" %}Octubre {{ year }}
+                        {% elif month_string == "11" %}Noviembre {{ year }}
+                        {% elif month_string == "12" %}Diciembre {{ year }}
+                        {% endif %}
+                    </option>
+                    {% endwith %}
+                    {% endfor %}
+                </select>
+                <button type="submit">Filtrar</button>
+            </form>
+        </div>
+        <div class="income-graph">
+            <canvas id="incomeChart"></canvas>
+        </div>
+        <div class="income-summary">
+            Total de ingresos para {{ selected_date|date:"F Y" }}: ${{ income_data }}
+        </div>
+    </div>
+
+    <div class="expenses-section">
+        <h2>Gastos</h2>
+        <div class="expenses-graph">
+            <canvas id="expensesChart"></canvas>
+        </div>
+        <div class="expenses-summary">
+            Total de gastos para {{ selected_date|date:"F Y" }}: ${{ expenses_data }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var yearlyIncomeData = {{ yearly_income_data|safe }};
+var yearlyExpensesData = {{ yearly_expenses_data|safe }};
+var selectedDate = "{{ selected_date|date:'F Y' }}";
+</script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

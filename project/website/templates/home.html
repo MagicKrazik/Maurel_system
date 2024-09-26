@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="home-container">    
+    <div class="image-slider">
+        <div class="slider-container">
+            <img src="{% static 'images/1.jpg' %}" alt="Slide 1" class="slide">
+            <img src="{% static 'images/2.jpg' %}" alt="Slide 2" class="slide">
+            <img src="{% static 'images/4.jpg' %}" alt="Slide 4" class="slide">
+            <img src="{% static 'images/5.jpg' %}" alt="Slide 5" class="slide">
+            <img src="{% static 'images/6.jpg' %}" alt="Slide 6" class="slide">
+        </div>
+        <button class="slider-btn prev">&lt;</button>
+        <button class="slider-btn next">&gt;</button>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'js/home.js' %}"></script>
+{% endblock %}

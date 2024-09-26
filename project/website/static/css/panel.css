@@ -1,0 +1,140 @@
+/* Admin Panel styles */
+.admin-panel {
+    max-width: 1200px;
+    margin: 85px auto 30px;
+    padding: 20px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+h1, h2, h3 {
+    color: #4a90e2;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.apartments-section {
+    margin-top: 30px;
+}
+
+.apartments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.apartment-card {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.apartment-card:hover {
+    transform: translateY(-5px);
+}
+
+.fee-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.fee-input {
+    width: 100%;
+    padding: 5px;
+    background-color: #3a3a3a;
+    border: 1px solid #4a4a4a;
+    color: #ffffff;
+    border-radius: 4px;
+}
+
+.total-amount {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 15px 0;
+    color: #7FFF00;
+}
+
+.pending-payment {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 15px 0;
+    color: #FF1493;
+}
+
+.is-debtor {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 15px 0;
+    color: white;
+}
+
+.payment-status {
+    margin-bottom: 15px;
+}
+
+.status-text {
+    font-weight: bold;
+}
+
+.update-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.update-btn:hover {
+    background-color: #3a7bc8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admin-panel {
+        margin-top: 70px;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    .apartments-list {
+        grid-template-columns: 1fr;
+    }
+
+    .fee-group {
+        grid-template-columns: 1fr;
+    }
+
+    .fee-input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        margin-top: 60px;
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+}

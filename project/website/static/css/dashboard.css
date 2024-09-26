@@ -1,0 +1,314 @@
+/* Dashboard styles */
+.dashboard-container {
+    padding: 2rem;
+    margin-top: 70px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #2A2B2A;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2, h3 {
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+    color: #4a90e2;
+}
+
+/* Current fees styles */
+.current-fees {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fee-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #3a3a3a;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.fee-item:last-child {
+    border-bottom: none;
+}
+
+.fee-item.total {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #4a90e2;
+    border-top: 2px solid #3a3a3a;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+}
+
+.fee-item.status span:last-child,
+.fee-item.account-status span:last-child {
+    font-weight: bold;
+}
+
+.fee-item.account-status {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #3a3a3a;
+}
+
+/* Debtors section styles */
+.debtors-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.debtors-section p {
+    color:white;
+}
+
+.debtors-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.debtor-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    border-left: 5px solid #f44336;
+}
+
+.debtor-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.debtor-card h3 {
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.debtor-card p {
+    color: #f44336;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.debtor-amount {
+    color: #f44336;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: block;
+    margin-top: 0.5rem;
+    text-align: right;
+}
+
+/* Income section styles */
+.income-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.filter-controls {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-controls label {
+    color: #ffffff;
+    margin-right: 1rem;
+    font-size: 1.1rem;
+}
+
+.filter-controls select,
+.filter-controls button {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-controls select {
+    min-width: 200px;
+}
+
+.filter-controls button {
+    background-color: #4a90e2;
+    cursor: pointer;
+}
+
+.filter-controls button:hover {
+    background-color: #3a80d2;
+    transform: translateY(-2px);
+}
+
+.income-graph {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.income-summary {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+        margin-top: 50px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .fee-item,
+    .debtor-card h3,
+    .filter-controls label,
+    .filter-controls select,
+    .filter-controls button,
+    .income-summary {
+        font-size: 1rem;
+    }
+
+    .debtors-list {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-controls label,
+    .filter-controls select,
+    .filter-controls button {
+        width: 100%;
+        margin-bottom: 0.75rem;
+        margin-right: 0;
+    }
+
+    .debtor-card {
+        padding: 1.25rem;
+    }
+
+    .debtor-card h3 {
+        font-size: 1.2rem;
+    }
+
+    .debtor-amount {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-container {
+        padding: 0.75rem;
+    }
+
+    .current-fees,
+    .debtors-section,
+    .income-section {
+        padding: 1rem;
+    }
+
+    .fee-item,
+    .debtor-card h3,
+    .filter-controls label,
+    .filter-controls select,
+    .filter-controls button,
+    .income-summary {
+        font-size: 0.9rem;
+    }
+}
+
+/* Existing styles remain unchanged */
+
+.expenses-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.expenses-graph {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.expenses-summary {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    /* Existing media query styles */
+    .expenses-summary {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Existing media query styles */
+    .expenses-section {
+        padding: 1rem;
+    }
+}

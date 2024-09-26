@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Torres del Maurel - Documentos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/documentos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="documentos-container dashboard-container">
+    <h1>Biblioteca de Documentos</h1>
+
+    <div class="filter-controls">
+        <label for="date-filter">Filtrar por mes y año:</label>
+        <select id="date-filter" name="date">
+            {% for year, month in date_range %}
+                {% with month|stringformat:"02d" as month_string %}
+                    <option value="{{ year }}-{{ month_string }}" {% if year == selected_year and month == selected_month %}selected{% endif %}>
+                        {% if month_string == "01" %}Enero {{ year }}
+                        {% elif month_string == "02" %}Febrero {{ year }}
+                        {% elif month_string == "03" %}Marzo {{ year }}
+                        {% elif month_string == "04" %}Abril {{ year }}
+                        {% elif month_string == "05" %}Mayo {{ year }}
+                        {% elif month_string == "06" %}Junio {{ year }}
+                        {% elif month_string == "07" %}Julio {{ year }}
+                        {% elif month_string == "08" %}Agosto {{ year }}
+                        {% elif month_string == "09" %}Septiembre {{ year }}
+                        {% elif month_string == "10" %}Octubre {{ year }}
+                        {% elif month_string == "11" %}Noviembre {{ year }}
+                        {% elif month_string == "12" %}Diciembre {{ year }}
+                        {% endif %}
+                    </option>
+                {% endwith %}
+            {% endfor %}
+        </select>
+        <button id="filter-button">Filtrar</button>
+    </div>
+
+    <div class="documents-sections">
+        {% for section_name, documents in grouped_documents.items %}
+            <div id="{{ section_name }}" class="section document-section">
+                <h2>{{ document_type_headers|get_item:section_name }}</h2>
+                {% if documents %}
+                    <div class="document-list">
+                        {% for doc in documents %}
+                            <div class="document-item">
+                                <a href="{{ doc.file.url }}" class="document-link" target="_blank">
+                                    <span class="document-icon">📄</span>
+                                    <span class="document-info">
+                                        {% if section_name == 'pagos_mantenimiento' %}
+                                            <span class="document-title">{{ doc.related_user.username }} - {{ doc.date|date:"d/m/Y" }}</span>
+                                        {% elif section_name == 'gastos_pasivos' %}
+                                            <span class="document-title">{{ doc.title }}</span>
+                                        {% else %}
+                                            <span class="document-title">{{ doc.title }}</span>
+                                        {% endif %}
+                                        <span class="document-date">{{ doc.date|date:"d/m/Y" }}</span>
+                                    </span>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="no-documents">No se encontraron documentos {% if section_name == 'pagos_mantenimiento' or section_name == 'gastos_pasivos' %}para el período seleccionado{% endif %}.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if user.is_staff %}
+        <div class="admin-actions">
+            <a href="{% url 'upload_document' %}" class="btn btn-primary">Subir Documento</a>
+            <a href="{% url 'gastos' %}" class="btn btn-primary">Subir Comprobante de Gastos</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/documentos.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Panel de Administración{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-panel">
+    <h1>Panel de Administración</h1>
+
+    <div class="apartments-section">
+        <h2>Estado de Pagos por Departamento - {{ current_month|date:"F Y" }}</h2>
+        <div class="apartments-list">
+            {% for apartment in apartments %}
+                {% if apartment.apartment_number %}
+                    <div class="apartment-card">
+                        <h3>Departamento {{ apartment.apartment_number }}</h3>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="apartment_id" value="{{ apartment.id }}">
+                            <div class="fee-group">
+                                <div class="fee-item">
+                                    <label>Gas:</label>
+                                    <input type="number" name="gas_fee" value="{{ apartment.monthly_fees.last.gas_fee|default:0 }}" step="0.01" class="fee-input">
+                                </div>
+                                <div class="fee-item">
+                                    <label>Mantenimiento:</label>
+                                    <input type="number" name="maintenance_fee" value="{{ apartment.monthly_fees.last.maintenance_fee|default:1200 }}" step="0.01" class="fee-input">
+                                </div>
+                                <div class="fee-item">
+                                    <label>Estacionamiento:</label>
+                                    <input type="number" name="parking_fee" value="{{ apartment.monthly_fees.last.parking_fee|default:0 }}" step="0.01" class="fee-input">
+                                </div>
+                                <div class="fee-item">
+                                    <label>Extra:</label>
+                                    <input type="number" name="extra_fee" value="{{ apartment.monthly_fees.last.extra_fee|default:500 }}" step="0.01" class="fee-input">
+                                </div>
+                                <div class="fee-item">
+                                    <label>Saldo pendiente:</label>
+                                    <input type="number" name="past_due" value="{{ apartment.monthly_fees.last.past_due|default:0 }}" step="0.01" class="fee-input">
+                                </div>
+                            </div>
+                            <div class="total-amount">
+                                Total a pagar: $ <span class="total-value">{{ apartment.monthly_fees.last.total_fee|default:0 }}</span>
+                            </div>
+                            <div class="payment-status">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="is_paid" {% if apartment.monthly_fees.last.is_paid %}checked{% endif %}>
+                                    <span class="checkmark"></span>
+                                    Pagado
+                                </label>
+                            </div>
+                            <div class="paid-amount">
+                                <label>Monto pagado:</label>
+                                <input type="number" name="paid_amount" value="{{ apartment.monthly_fees.last.paid_amount|default:0 }}" step="0.01" class="fee-input paid-amount-input">
+                            </div>
+                            <div class="pending-payment">
+                                <label>Pago pendiente: $</label>
+                                <span class="pending-value">{{ apartment.monthly_fees.last.remaining_amount|default:0 }}</span>
+                            </div>
+                            <div class="is-debtor">
+                                <input type="checkbox" name="is_debtor" id="is_debtor_{{ apartment.id }}" {% if apartment.is_debtor %}checked{% endif %}>
+                                <label for="is_debtor_{{ apartment.id }}">Marcar como deudor</label>
+                            </div>
+                            <button type="submit" class="update-btn">Actualizar</button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/panel.js' %}"></script>
+{% endblock %}

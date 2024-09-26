@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Torres del Maurel{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/building.png' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <div class="navbar-left">
+                <div class="logo-container">
+                    <a href="{% url 'home' %}" class="logo-box">
+                        <img src="{% static 'images/Maurel.png' %}" alt="Maurel_logo" class="logo">
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="navbar-right navbar-menu">
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'profile' %}">Perfil</a>
+                    <a href="{% url 'pagos' %}">Pagos</a>
+                    <a href="{% url 'qys' %}">Actas</a>
+                    <a href="{% url 'documentos' %}">Documentos</a>
+                    {% if user.is_staff or user.is_staff %}
+                        <a href="{% url 'panel' %}">Panel Admin</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Iniciar Sesión</a>
+                {% endif %}
+            </div>
+
+            <div class="navbar-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" role="main">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            © Torres del Maurel - Desarrollado por  <a class='dive-link' href='http://www.dive.it.com'> dive.it.com </a>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/base.js' %}"></script>
+  {% block extra_js %}
+
+  {% endblock %}  
+</body>
+</html>

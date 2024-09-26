@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Quejas y Sugerencias{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/qys.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container qys-container">
+    <h1>Actas</h1>
+
+    <div class="qys-form-section">
+        <h2>Nueva Queja o Sugerencia</h2>
+        <form method="post" enctype="multipart/form-data" id="qys-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors }}
+                {% if field.help_text %}
+                <p class="help">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" name="submit_qys" class="submit-btn">Enviar</button>
+        </form>
+
+        <div id="submission-status" class="submission-status"></div>
+    </div>
+
+    <div class="all-submissions">
+        <h2>Todas las Quejas y Sugerencias</h2>
+        <table class="qys-table">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Categoría</th>
+                    <th>Apartamento</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Fecha de Creación</th>
+                    <th>Fecha de Atención</th>
+                    {% if user.is_staff %}
+                    <th>Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody id="qys-table-body">
+                {% for qys in all_qys %}
+                <tr>
+                    <td>{{ qys.get_type_display }}</td>
+                    <td>{{ qys.get_category_display }}</td>
+                    <td>{{ qys.apartment_number }}</td>
+                    <td>{{ qys.description|truncatewords:20 }}</td>
+                    <td class="status-{{ qys.status }}">{{ qys.get_status_display }}</td>
+                    <td>{{ qys.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ qys.attended_at|date:"d/m/Y H:i"|default:"-" }}</td>
+                    {% if user.is_staff %}
+                    <td>
+                        <form method="post" action="{% url 'qys' %}" class="status-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="qys_id" value="{{ qys.id }}">
+                            <select name="status" onchange="this.form.submit()">
+                                {% for value, label in qys.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" name="update_status" value="1">
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr id="no-qys-row">
+                    <td colspan="{% if user.is_staff %}8{% else %}7{% endif %}">No hay quejas o sugerencias registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/qys.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,166 @@
+/* Base styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: black;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+/* Navbar styles */
+.navbar-content {
+    background-color: black;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    max-height: 40px;
+}
+
+.navbar-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.navbar-menu a {
+    color: #e0e0e0;
+    text-decoration: none;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.95rem;
+}
+
+.navbar-menu a:hover {
+    color: #ffffff;
+    background-color: #333333;
+}
+
+.navbar-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #e0e0e0;
+    margin: 2px 0;
+}
+
+/* Footer styles */
+.footer-content {
+    text-align: center;
+    color: white;
+    padding: 0.5rem 0;
+    background-color: #1e1e1e;
+    font-size: 0.9rem;
+}
+
+.dive-link {
+  color: #32CD32;  /* Green color for the link text */
+  text-decoration: none;  /* Remove underline from the link */
+  font-weight: bold;  /* Make the link text bold */
+}
+
+.dive-link:hover {
+  color: #006400;  /* Change color to a darker green on hover */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);  /* Add a subtle shadow on hover */
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-menu {
+        display: none;
+    }
+
+    .navbar-toggle {
+        display: flex;
+        margin-right: 10px;
+    }
+
+    .navbar-menu.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        right: 0;
+        background-color: #1e1e1e;
+        padding: 0.5rem 0;
+    }
+
+    .navbar-menu.active a {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 568px) {
+    .navbar-menu {
+        display: none;
+    }
+
+    .navbar-toggle {
+        display: flex;
+        margin-right: 10px;
+    }
+
+    .navbar-menu.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        right: 0;
+        background-color: #1e1e1e;
+        padding: 0.5rem 0;
+    }
+
+    .navbar-menu.active a {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 428px), (max-width: 414px) {
+    .container {
+        padding: 0 5px;
+    }
+
+    .navbar-menu a {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .logo {
+        max-height: 25px;
+    }
+}
