@@ -105,7 +105,8 @@ body {
 
     .navbar-toggle {
         display: flex;
-        margin-right: 10px;
+        margin-right: 14px;
+        margin-top: 2px;
     }
 
     .navbar-menu.active {
@@ -131,7 +132,8 @@ body {
 
     .navbar-toggle {
         display: flex;
-        margin-right: 10px;
+        margin-right: 14px;
+        margin-top: 2px;
     }
 
     .navbar-menu.active {
