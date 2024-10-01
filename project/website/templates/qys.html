@@ -9,11 +9,11 @@
 
 {% block content %}
 <div class="dashboard-container qys-container">
-    <h1>Actas</h1>
+    <h1>Quejas y Sugerencias</h1>
 
     <div class="qys-form-section">
         <h2>Nueva Queja o Sugerencia</h2>
-        <form method="post" enctype="multipart/form-data" id="qys-form">
+        <form id="qys-form" method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
             {% for field in form %}
@@ -26,61 +26,63 @@
                 {% endif %}
             </div>
             {% endfor %}
-            <button type="submit" name="submit_qys" class="submit-btn">Enviar</button>
+            <button type="submit" class="submit-btn">Enviar</button>
         </form>
-
         <div id="submission-status" class="submission-status"></div>
     </div>
 
     <div class="all-submissions">
         <h2>Todas las Quejas y Sugerencias</h2>
-        <table class="qys-table">
-            <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Categoría</th>
-                    <th>Apartamento</th>
-                    <th>Descripción</th>
-                    <th>Estado</th>
-                    <th>Fecha de Creación</th>
-                    <th>Fecha de Atención</th>
-                    {% if user.is_staff %}
-                    <th>Acciones</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody id="qys-table-body">
-                {% for qys in all_qys %}
-                <tr>
-                    <td data-label="Tipo">{{ qys.get_type_display }}</td>
-                    <td data-label="Categoría">{{ qys.get_category_display }}</td>
-                    <td data-label="Apartamento">{{ qys.apartment_number }}</td>
-                    <td data-label="Descripción">{{ qys.description|truncatewords:20 }}</td>
-                    <td data-label="Estado" class="status-{{ qys.status }}">{{ qys.get_status_display }}</td>
-                    <td data-label="Fecha de Creación">{{ qys.created_at|date:"d/m/Y H:i" }}</td>
-                    <td data-label="Fecha de Atención">{{ qys.attended_at|date:"d/m/Y H:i"|default:"-" }}</td>
-                    {% if user.is_staff %}
-                    <td>
-                        <form method="post" action="{% url 'qys' %}" class="status-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="qys_id" value="{{ qys.id }}">
-                            <select name="status" onchange="this.form.submit()">
-                                {% for value, label in qys.STATUS_CHOICES %}
-                                <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                            <input type="hidden" name="update_status" value="1">
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
-                {% empty %}
-                <tr id="no-qys-row">
-                    <td colspan="{% if user.is_staff %}8{% else %}7{% endif %}">No hay quejas o sugerencias registradas.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="qys-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th>Apartamento</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                        <th>Fecha de Creación</th>
+                        <th>Fecha de Atención</th>
+                        {% if user.is_staff %}
+                        <th>Acciones</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody id="qys-table-body">
+                    {% for qys in all_qys %}
+                    <tr>
+                        <td data-label="Tipo">{{ qys.get_type_display }}</td>
+                        <td data-label="Categoría">{{ qys.get_category_display }}</td>
+                        <td data-label="Apartamento">{{ qys.apartment_number }}</td>
+                        <td data-label="Descripción">{{ qys.description|truncatewords:20 }}</td>
+                        <td data-label="Estado" class="status-{{ qys.status }}">{{ qys.get_status_display }}</td>
+                        <td data-label="Fecha de Creación">{{ qys.created_at|date:"d/m/Y H:i" }}</td>
+                        <td data-label="Fecha de Atención">{{ qys.attended_at|date:"d/m/Y H:i"|default:"-" }}</td>
+                        {% if user.is_staff %}
+                        <td data-label="Acciones">
+                            <form method="post" action="{% url 'qys' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="qys_id" value="{{ qys.id }}">
+                                <select name="status" class="status-letters" onchange="updateStatus(this)">
+                                    {% for value, label in qys.STATUS_CHOICES %}
+                                    <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="update_status" value="1">
+                            </form>
+                            <button class="delete-btn" onclick="deleteQyS({{ qys.id }})">Eliminar</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr id="no-qys-row">
+                        <td colspan="{% if user.is_staff %}8{% else %}7{% endif %}">No hay quejas o sugerencias registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

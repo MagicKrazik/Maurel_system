@@ -47,14 +47,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${newQyS.type}</td>
-            <td>${newQyS.category}</td>
-            <td>${newQyS.apartment_number}</td>
-            <td>${newQyS.description}</td>
-            <td>${newQyS.status}</td>
-            <td>${newQyS.created_at}</td>
+            <td data-label="Tipo">${newQyS.type}</td>
+            <td data-label="Categoría">${newQyS.category}</td>
+            <td data-label="Apartamento">${newQyS.apartment_number}</td>
+            <td data-label="Descripción">${newQyS.description}</td>
+            <td data-label="Estado">${newQyS.status}</td>
+            <td data-label="Fecha de Creación">${newQyS.created_at}</td>
+            <td data-label="Fecha de Atención">-</td>
             ${newQyS.is_staff ? `
-            <td>
+            <td data-label="Acciones">
                 <form method="post" action="/qys/">
                     <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
                     <input type="hidden" name="qys_id" value="${newQyS.id}">
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                     <input type="hidden" name="update_status" value="1">
                 </form>
+                <button class="delete-btn" onclick="deleteQyS(${newQyS.id})">Eliminar</button>
             </td>
             ` : ''}
         `;
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function updateStatus(selectElement) {
+    window.updateStatus = function(selectElement) {
         const form = selectElement.closest('form');
         const formData = new FormData(form);
 
@@ -105,6 +107,48 @@ document.addEventListener('DOMContentLoaded', function() {
             submissionStatus.textContent = 'Error al actualizar el estado. Por favor, intente nuevamente.';
             submissionStatus.className = 'submission-status error';
         });
+    }
+
+    window.deleteQyS = function(qysId) {
+        if (confirm('¿Está seguro de que desea eliminar esta queja o sugerencia?')) {
+            const formData = new FormData();
+            formData.append('qys_id', qysId);
+            formData.append('delete_qys', '1');
+
+            fetch('/qys/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    submissionStatus.textContent = data.message;
+                    submissionStatus.className = 'submission-status success';
+                    const rowToDelete = document.querySelector(`tr[data-qys-id="${qysId}"]`);
+                    if (rowToDelete) {
+                        rowToDelete.remove();
+                    }
+                    if (qysTableBody.children.length === 0) {
+                        const noQysRow = document.createElement('tr');
+                        noQysRow.id = 'no-qys-row';
+                        noQysRow.innerHTML = '<td colspan="8">No hay quejas o sugerencias registradas.</td>';
+                        qysTableBody.appendChild(noQysRow);
+                    }
+                } else {
+                    submissionStatus.textContent = 'Error al eliminar. Por favor, intente nuevamente.';
+                    submissionStatus.className = 'submission-status error';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submissionStatus.textContent = 'Error al eliminar. Por favor, intente nuevamente.';
+                submissionStatus.className = 'submission-status error';
+            });
+        }
     }
 
     // Helper function to get CSRF token

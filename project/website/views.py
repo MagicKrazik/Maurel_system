@@ -36,9 +36,7 @@ from django.core.cache import cache
 from django.db import transaction
 from .forms import ExpenseUploadForm
 from .models import ExpenseReport
-from django.http import JsonResponse
 from .forms import AnnouncementForm
-
 
 
 
@@ -304,9 +302,28 @@ def qys(request):
                     })
                 messages.error(request, 'Estado inválido.')
             return redirect('qys')
+        elif 'delete_qys' in request.POST and request.user.is_staff:
+            qys_id = request.POST.get('qys_id')
+            return delete_qys(request, qys_id)
     
     all_qys = ComplaintSuggestion.objects.all().order_by('-created_at')
     return render(request, 'qys.html', {'form': form, 'all_qys': all_qys})
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(["POST"])
+def delete_qys(request, qys_id):
+    qys = get_object_or_404(ComplaintSuggestion, id=qys_id)
+    qys.delete()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': 'La queja o sugerencia ha sido eliminada exitosamente.',
+        })
+    messages.success(request, 'La queja o sugerencia ha sido eliminada exitosamente.')
+    return redirect('qys')
 
 
 @login_required
