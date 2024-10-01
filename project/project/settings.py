@@ -162,3 +162,16 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'carlos.horacio.olivares@gmail.com'
+EMAIL_HOST_PASSWORD = 'zhtu fjgf kbyw klat'
+
+DEFAULT_FROM_EMAIL = 'noreply@torresamaurel.com'
+
+PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
+
