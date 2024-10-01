@@ -1,16 +1,40 @@
 document.addEventListener('DOMContentLoaded', function() {
     const navbarToggle = document.querySelector('.navbar-toggle');
     const navbarMenu = document.querySelector('.navbar-menu');
-    const dropdownToggle = document.querySelector('.dropdown-toggle');
-    const navbarDropdown = document.querySelector('.navbar-dropdown');
+    const navLinks = document.querySelectorAll('.navbar-link');
+    const dropdowns = document.querySelectorAll('.navbar-dropdown');
 
-    navbarToggle.addEventListener('click', function() {
-        navbarMenu.classList.toggle('active');
+    // Toggle mobile menu
+    navbarToggle.addEventListener('click', toggleMobileMenu);
+
+    // Close menu when clicking on a nav link
+    navLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+    // Toggle dropdowns on mobile
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('click', function(e) {
+            if (window.innerWidth < 960) {
+                e.preventDefault();
+                this.classList.toggle('active');
+            }
+        });
+    });
+
+    function toggleMobileMenu() {
         navbarToggle.classList.toggle('active');
-    });
+        navbarMenu.classList.toggle('active');
+        
+        // Toggle between hamburger and X icon
+        navbarToggle.innerHTML = navbarToggle.classList.contains('active') 
+            ? '<span class="bar"></span><span class="bar"></span><span class="bar"></span>'
+            : '<span class="bar"></span><span class="bar"></span><span class="bar"></span>';
+    }
 
-    dropdownToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        navbarDropdown.classList.toggle('active');
-    });
+    function closeMenu() {
+        navbarToggle.classList.remove('active');
+        navbarMenu.classList.remove('active');
+        
+        // Reset to hamburger icon
+        navbarToggle.innerHTML = '<span class="bar"></span><span class="bar"></span><span class="bar"></span>';
+    }
 });

@@ -1,49 +1,47 @@
+/* Base styles */
 .documentos-container {
-    padding: 2rem;
-    margin-top: 70px;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+    padding: 1rem;
+    margin: 50px auto 25px;
+    max-width: 100%;
     background-color: #2A2B2A;
-    margin-bottom: 25px;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 h1, h2 {
     color: #ffffff;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     border-bottom: 2px solid #4a90e2;
     padding-bottom: 0.5rem;
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #4a90e2;
 }
 
+/* Filter controls */
 .filter-controls {
     background-color: #1e1e1e;
     border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .filter-controls form {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .filter-controls label {
     color: #ffffff;
-    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .filter-controls select,
@@ -53,6 +51,7 @@ h2 {
     border: 1px solid #444;
     background-color: #2c2c2c;
     color: #ffffff;
+    font-size: 1rem;
 }
 
 .filter-controls button {
@@ -65,26 +64,28 @@ h2 {
     background-color: #3a80d2;
 }
 
+/* Document sections */
 .documents-sections {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
 }
 
 .document-section {
     background-color: #1e1e1e;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .document-section ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 .document-section li {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .document-link {
@@ -104,18 +105,23 @@ h2 {
 }
 
 .document-icon {
-    font-size: 1.5rem;
-    margin-right: 1rem;
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
 }
 
 .document-info {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .document-title {
     font-weight: bold;
     margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .document-date {
@@ -123,71 +129,26 @@ h2 {
     color: #888;
 }
 
+/* Admin actions */
 .admin-actions {
-    margin-top: 2rem;
-    text-align: right;
+    margin-top: 1.5rem;
+    text-align: center;
 }
 
 .btn-primary {
     background-color: #4a90e2;
     color: #ffffff;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     border-radius: 4px;
     text-decoration: none;
     transition: background-color 0.3s ease;
+    display: inline-block;
+    margin: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .btn-primary:hover {
     background-color: #3a80d2;
-}
-
-@media (max-width: 768px) {
-    .documentos-container {
-        padding: 1rem;
-        margin-top: 50px;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-    }
-
-    .filter-controls form {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .filter-controls label,
-    .filter-controls select,
-    .filter-controls button {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .documents-sections {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    h1 {
-        font-size: 1.75rem;
-    }
-
-    h2 {
-        font-size: 1.25rem;
-    }
-
-    .documentos-container {
-        padding: 0.75rem;
-    }
-
-    .document-section {
-        padding: 1rem;
-    }
 }
 
 .filter-indicator {
@@ -195,4 +156,57 @@ h2 {
     color: #888;
     font-weight: normal;
     margin-left: 10px;
+}
+
+/* Responsive styles */
+@media (min-width: 481px) {
+    .documentos-container {
+        padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 2.25rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    .filter-controls form {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-controls select,
+    .filter-controls button {
+        flex: 1;
+    }
+
+    .documents-sections {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+@media (min-width: 769px) {
+    .documentos-container {
+        padding: 2rem;
+        margin-top: 70px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    .filter-controls {
+        padding: 1.5rem;
+    }
+
+    .document-section {
+        padding: 1.5rem;
+    }
 }
