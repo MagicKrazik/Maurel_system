@@ -20,7 +20,7 @@ def generate_payment_report(payment, filename):
     
     c.setFont("Helvetica", 12)
     c.drawString(50, height - 80, f"Usuario: {payment.user.username}")
-    c.drawString(50, height - 100, f"Apartamento: {payment.user.apartment_number}")
+    c.drawString(50, height - 100, f"Departamento: {payment.user.apartment_number}")
     c.drawString(50, height - 120, f"Fecha de pago: {payment.payment_date}")
     c.drawString(50, height - 140, f"Monto pagado: ${payment.amount_paid}")
     c.drawString(50, height - 160, f"Método de pago: {payment.get_payment_method_display()}")
