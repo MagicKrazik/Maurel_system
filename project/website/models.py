@@ -13,7 +13,7 @@ def payment_report_path(instance, filename):
 
 
 class CustomUser(AbstractUser):
-    apartment_number = models.CharField(max_length=7, unique=True)
+    apartment_number = models.CharField(max_length=7, unique=True, null=True, blank=True)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_first_login = models.BooleanField(default=True)
