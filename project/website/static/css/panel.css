@@ -348,3 +348,145 @@ button.update-btn:hover {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     }
 }
+
+/* Report section styles */
+.report-section {
+    margin-top: 20px;
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.report-section h2 {
+    color: #4a90e2;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.report-creation-date {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.report-section form {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-section .form-group {
+    margin-bottom: 1rem;
+}
+
+.report-section label {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.report-section select,
+.report-section input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: #3a3a3a;
+    border: 1px solid #4a4a4a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.report-section select:focus,
+.report-section input[type="number"]:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.report-section button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.report-section button[type="submit"]:hover {
+    background-color: #3a80d2;
+    transform: translateY(-2px);
+}
+
+/* Responsive design for report section */
+@media (min-width: 481px) {
+    .report-section {
+        padding: 1.5rem;
+    }
+
+    .report-section h2 {
+        font-size: 1.7rem;
+    }
+
+    .report-creation-date {
+        font-size: 1rem;
+    }
+
+    .report-section form {
+        padding: 1.25rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .report-section {
+        padding: 2rem;
+    }
+
+    .report-section h2 {
+        font-size: 2rem;
+    }
+
+    .report-creation-date {
+        font-size: 1.1rem;
+    }
+
+    .report-section form {
+        padding: 1.5rem;
+    }
+
+    .report-section .form-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .report-section label {
+        flex: 0 0 30%;
+        text-align: right;
+        margin-bottom: 0;
+    }
+
+    .report-section select,
+    .report-section input[type="number"] {
+        flex: 1;
+    }
+
+    .report-section button[type="submit"] {
+        width: auto;
+        margin-left: auto;
+        padding: 0.75rem 2rem;
+    }
+}

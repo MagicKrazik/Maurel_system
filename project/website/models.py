@@ -1,14 +1,16 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 import os
 from django.conf import settings
 from django.db.models import Sum
+from django.contrib.auth.models import AbstractUser, Group, Permission
+
 
 
 def payment_report_path(instance, filename):
     # File will be uploaded to STATIC_ROOT/documents/<filename>
     return os.path.join('documents', filename)
+
 
 class CustomUser(AbstractUser):
     apartment_number = models.CharField(max_length=7, unique=True)
@@ -16,6 +18,24 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_first_login = models.BooleanField(default=True)
     is_debtor = models.BooleanField(default=False)
+
+    # Add related_name to avoid clashes
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='customuser_set',
+        related_query_name='customuser',
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='customuser_set',
+        related_query_name='customuser',
+    )
 
     def __str__(self):
         return f"{self.username} - {self.apartment_number}"

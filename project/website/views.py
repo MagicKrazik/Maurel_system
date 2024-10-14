@@ -35,7 +35,7 @@ import shutil
 from django.core.cache import cache
 from django.db import transaction
 from .forms import ExpenseUploadForm
-from .models import ExpenseReport
+from .models import PaymentReport, ExpenseReport
 from .forms import AnnouncementForm
 
 ## forgot password configuration:
@@ -50,6 +50,15 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
 from django.urls import reverse
+
+from django.http import HttpResponse
+
+from calendar import month_name
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 
 
@@ -618,3 +627,141 @@ password_reset_done = PasswordResetDoneView.as_view(template_name='password_rese
 password_reset_confirm = PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html', success_url=reverse_lazy('password_reset_complete'))
 password_reset_complete = PasswordResetCompleteView.as_view(template_name='password_reset_complete.html')
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def generate_monthly_balance_report(request):
+    year = int(request.GET.get('year', datetime.now().year))
+    month = int(request.GET.get('month', datetime.now().month))
+    
+    # Get current date and time for report creation
+    report_creation_date = datetime.now().strftime("%d de %B de %Y, %H:%M")
+
+    # Get all payments for the specified month
+    payments = PaymentReport.objects.filter(payment_date__year=year, payment_date__month=month)
+    total_income = sum(payment.amount_paid for payment in payments)
+
+    # Get all expenses for the specified month
+    expenses = ExpenseReport.objects.filter(expense_date__year=year, expense_date__month=month)
+    total_expenses = sum(expense.amount for expense in expenses)
+
+    # Calculate balance
+    balance = total_income - total_expenses
+
+    # Create the PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = styles['Heading1']
+    subtitle_style = styles['Heading2']
+    normal_style = styles['Normal']
+
+    # Title
+    elements.append(Paragraph(f"Reporte de Balance Mensual - {month_name[month]} {year}", title_style))
+    elements.append(Spacer(1, 12))
+    
+    # Creation Date
+    elements.append(Paragraph(f"Fecha de creación: {report_creation_date}", normal_style))
+    elements.append(Spacer(1, 12))
+
+    # Summary
+    summary_data = [
+        ['Ingresos Totales', f"${total_income:.2f}"],
+        ['Gastos Totales', f"${total_expenses:.2f}"],
+        ['Balance', f"${balance:.2f}"]
+    ]
+    summary_table = Table(summary_data)
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 12),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 24))
+
+    # Income details
+    elements.append(Paragraph("Desglose de Ingresos", subtitle_style))
+    elements.append(Spacer(1, 12))
+    income_data = [['Fecha', 'Departamento', 'Monto']]
+    for payment in payments:
+        income_data.append([
+            payment.payment_date.strftime('%d/%m/%Y'),
+            payment.user.apartment_number,
+            f"${payment.amount_paid:.2f}"
+        ])
+    income_data.append(['Total Ingresos', '', f"${total_income:.2f}"])
+    income_table = Table(income_data)
+    income_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(income_table)
+    elements.append(Spacer(1, 24))
+
+    # Expense details
+    elements.append(Paragraph("Desglose de Gastos", subtitle_style))
+    elements.append(Spacer(1, 12))
+    expense_data = [['Fecha', 'Concepto', 'Monto']]
+    for expense in expenses:
+        expense_data.append([
+            expense.expense_date.strftime('%d/%m/%Y'),
+            expense.expense_concept,
+            f"${expense.amount:.2f}"
+        ])
+    expense_data.append(['Total Gastos', '', f"${total_expenses:.2f}"])
+    expense_table = Table(expense_data)
+    expense_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(expense_table)
+
+    # Generate the PDF
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    # Create HTTP response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="monthly_balance_report_{year}_{month}.pdf"'
+    response.write(pdf)
+
+    return response

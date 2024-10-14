@@ -11,7 +11,6 @@
 <div class="admin-panel">
     <h1>Panel de Administración</h1>
 
-
     <div class="announcements-section">
         <h2>Tablero de Noticias</h2>
         
@@ -119,6 +118,35 @@
                 {% endif %}
             {% endfor %}
         </div>
+    </div>
+
+    <div class="report-section">
+        <h2>Generar Reporte de Balance Mensual</h2>
+        <form id="balance-report-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="report-month">Mes:</label>
+                <select id="report-month" name="month" required>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="report-year">Año:</label>
+                <input type="number" id="report-year" name="year" required min="2000" max="2100">
+            </div>
+            <button type="submit" class="btn btn-primary">Generar Reporte PDF</button>
+        </form>
     </div>
 
 </div>

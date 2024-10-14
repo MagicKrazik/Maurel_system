@@ -148,13 +148,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+
 # Login - config
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login' 
-
-# Add this line near the bottom of the file
-AUTH_USER_MODEL = 'website.CustomUser'
 
 
 CACHES = {
@@ -175,3 +173,4 @@ DEFAULT_FROM_EMAIL = 'noreply@torresamaurel.com'
 
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
 
+AUTH_USER_MODEL = 'website.CustomUser'
