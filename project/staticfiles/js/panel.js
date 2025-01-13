@@ -93,14 +93,48 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const month = document.getElementById('report-month').value;
             const year = document.getElementById('report-year').value;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             
-            // Generate the report
-            window.location.href = `/generate_monthly_balance_report/?year=${year}&month=${month}`;
+            // Create form data
+            const formData = new FormData();
+            formData.append('year', year);
+            formData.append('month', month);
+            formData.append('csrfmiddlewaretoken', csrftoken);
+
+            // Send POST request instead of GET
+            fetch('/generate_monthly_balance_report/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(blob => {
+                // Create a link to download the PDF
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `balance_mensual_${year}_${month}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al generar el reporte. Por favor, inténtelo de nuevo.');
+            });
         });
 
         // Set default values for month and year
         const currentDate = new Date();
-        document.getElementById('report-month').value = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+        document.getElementById('report-month').value = currentDate.getMonth() + 1;
         document.getElementById('report-year').value = currentDate.getFullYear();
     }
 

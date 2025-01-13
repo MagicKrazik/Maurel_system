@@ -341,3 +341,97 @@ h2 {
     color: white;
 }
 
+.balance-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.balance-graph {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    height: 300px;  /* Fixed height for better consistency */
+}
+
+.balance-summary {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.balance-summary.positive {
+    color: #4CAF50;
+}
+
+.balance-summary.negative {
+    color: #f44336;
+}
+
+.balance-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.balance-graph {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    height: 300px;
+}
+
+.balance-summary,
+.balance-summary-year {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.balance-summary-year {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #3a3a3a;
+}
+
+.balance-summary span,
+.balance-summary-year span {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+.positive {
+    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.negative {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .balance-summary,
+    .balance-summary-year {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .balance-summary,
+    .balance-summary-year {
+        font-size: 0.9rem;
+    }
+}

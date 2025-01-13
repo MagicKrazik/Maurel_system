@@ -1,18 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Fee items functionality
-    const feeItems = document.querySelectorAll('.fee-item');
-    
-    feeItems.forEach(item => {
-        const valueSpan = item.querySelector('span:last-child');
-        const value = parseFloat(valueSpan.textContent.replace('$', ''));
-        
-        if (!isNaN(value)) {
-            if (item.classList.contains('account-status')) {
-                valueSpan.classList.add(value > 0 ? 'negative' : 'positive');
-            } else {
-                valueSpan.classList.add(value > 0 ? 'positive' : 'negative');
-            }
-        }
+    // Calculate yearly balance data
+    const yearlyBalanceData = yearlyIncomeData.map((income, index) => {
+        return income - yearlyExpensesData[index];
     });
 
     // Chart configuration
@@ -37,6 +26,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
+
+    // Balance chart functionality
+    const balanceCtx = document.getElementById('balanceChart');
+    if (balanceCtx) {
+        const balanceChart = new Chart(balanceCtx, {
+            ...chartConfig,
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [{
+                    label: 'Balance mensual',
+                    data: yearlyBalanceData,
+                    backgroundColor: yearlyBalanceData.map(value => 
+                        value >= 0 ? 'rgba(75, 192, 75, 0.6)' : 'rgba(255, 99, 132, 0.6)'
+                    ),
+                    borderColor: yearlyBalanceData.map(value => 
+                        value >= 0 ? 'rgba(75, 192, 75, 1)' : 'rgba(255, 99, 132, 1)'
+                    ),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartConfig.options,
+                scales: {
+                    ...chartConfig.options.scales,
+                    y: {
+                        ...chartConfig.options.scales.y,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            zeroLineColor: 'rgba(255, 255, 255, 0.3)'
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Income chart functionality
     const incomeCtx = document.getElementById('incomeChart');
@@ -74,42 +98,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Filter functionality
-    const dateFilter = document.getElementById('date-filter');
-    const filterButton = document.getElementById('filter-button');
-
-    if (dateFilter && filterButton) {
-        filterButton.addEventListener('click', function() {
-            const selectedDate = dateFilter.value;
-            if (selectedDate) {
-                window.location.href = `?date=${selectedDate}`;
-            }
-        });
-
-        // Enable keyboard navigation for the date filter
-        dateFilter.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                filterButton.click();
-            }
-        });
-    }
-
     // Responsive design adjustments
     function handleResize() {
         const width = window.innerWidth;
+        const charts = [balanceChart, incomeChart, expensesChart].filter(chart => chart);
+        
         if (width <= 768) {
             // Adjust chart options for smaller screens
             Chart.defaults.font.size = 10;
-            if (incomeChart) incomeChart.options.scales.x.ticks.maxRotation = 90;
-            if (expensesChart) expensesChart.options.scales.x.ticks.maxRotation = 90;
+            charts.forEach(chart => {
+                if (chart.options.scales.x) chart.options.scales.x.ticks.maxRotation = 90;
+            });
         } else {
             // Reset chart options for larger screens
             Chart.defaults.font.size = 12;
-            if (incomeChart) incomeChart.options.scales.x.ticks.maxRotation = 0;
-            if (expensesChart) expensesChart.options.scales.x.ticks.maxRotation = 0;
+            charts.forEach(chart => {
+                if (chart.options.scales.x) chart.options.scales.x.ticks.maxRotation = 0;
+            });
         }
-        if (incomeChart) incomeChart.update();
-        if (expensesChart) expensesChart.update();
+        
+        // Update all charts
+        charts.forEach(chart => chart.update());
     }
 
     // Initial call and event listener for resize

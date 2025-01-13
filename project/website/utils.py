@@ -12,11 +12,16 @@ import os
 from PIL import Image
 import io
 from datetime import datetime
-
+from io import BytesIO
+from calendar import month_name
+from django.utils import timezone
+from django.utils import formats
+from django.utils.translation import gettext as _
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.conf import settings
 from django.contrib.auth import get_user_model
+
+
 
 ### Functions for proper reports creation and layout handling
 

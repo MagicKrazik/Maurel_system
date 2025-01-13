@@ -141,6 +141,24 @@
             Total de gastos para {{ selected_date|date:"F Y" }}: ${{ expenses_data }}
         </div>
     </div>
+    <div class="balance-section">
+        <h2>Balance</h2>
+        <div class="balance-graph">
+            <canvas id="balanceChart"></canvas>
+        </div>
+        <div class="balance-summary">
+            Balance para {{ selected_date|date:"F Y" }}: 
+            <span class="{% if monthly_balance >= 0 %}positive{% else %}negative{% endif %}">
+                ${{ monthly_balance|floatformat:2 }}
+            </span>
+        </div>
+        <div class="balance-summary-year">
+            Balance acumulado {{ selected_year }}: 
+            <span class="{% if yearly_balance >= 0 %}positive{% else %}negative{% endif %}">
+                ${{ yearly_balance|floatformat:2 }}
+            </span>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

@@ -39,6 +39,7 @@ from .models import PaymentReport, ExpenseReport
 from .forms import AnnouncementForm
 import logging
 from .utils import send_payment_confirmation_emails
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 
 ## forgot password configuration:
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -147,7 +148,6 @@ def logout_view(request):
 
 
 
-
 @login_required
 def dashboard(request):
     start_date = timezone.datetime(2025, 1, 1).date()
@@ -164,14 +164,30 @@ def dashboard(request):
 
     debtors = CustomUser.objects.filter(is_debtor=True)
     
-    # Get income data for the selected month
+    # Calculate monthly data
     income_data = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
-
-    # Get expenses data for the selected month
     expenses_data = float(ExpenseReport.objects.filter(
         expense_date__year=selected_year,
         expense_date__month=selected_month
     ).aggregate(Sum('amount'))['amount__sum'] or 0)
+
+    # Calculate monthly balance
+    monthly_balance = income_data - expenses_data
+
+    # Get yearly data arrays
+    yearly_income_data = []
+    yearly_expenses_data = []
+    for month in range(1, 13):
+        month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
+        month_expenses = float(ExpenseReport.objects.filter(
+            expense_date__year=selected_year,
+            expense_date__month=month
+        ).aggregate(Sum('amount'))['amount__sum'] or 0)
+        yearly_income_data.append(month_income)
+        yearly_expenses_data.append(month_expenses)
+
+    # Calculate yearly balance
+    yearly_balance = sum(yearly_income_data) - sum(yearly_expenses_data)
 
     # Generate month-year pairs for the dropdown
     date_range = []
@@ -179,18 +195,6 @@ def dashboard(request):
     while current <= end_date:
         date_range.append((current.year, current.month))
         current += relativedelta(months=1)
-
-    # Get income data for all months in the selected year
-    yearly_income_data = [float(MonthlyFees.get_total_paid_amount(selected_year, month)) for month in range(1, 13)]
-
-    # Get expenses data for all months in the selected year
-    yearly_expenses_data = [
-        float(ExpenseReport.objects.filter(
-            expense_date__year=selected_year,
-            expense_date__month=month
-        ).aggregate(Sum('amount'))['amount__sum'] or 0)
-        for month in range(1, 13)
-    ]
 
     if request.user.is_staff or request.user.is_superuser:
         context = {
@@ -209,6 +213,8 @@ def dashboard(request):
         'debtors': debtors,
         'income_data': income_data,
         'expenses_data': expenses_data,
+        'monthly_balance': monthly_balance,
+        'yearly_balance': yearly_balance,
         'yearly_income_data': json.dumps(yearly_income_data),
         'yearly_expenses_data': json.dumps(yearly_expenses_data),
         'selected_year': selected_year,
@@ -596,141 +602,142 @@ def panel(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def generate_monthly_balance_report(request):
-    year = int(request.GET.get('year', datetime.now().year))
-    month = int(request.GET.get('month', datetime.now().month))
-    
-    # Get current date and time for report creation
-    report_creation_date = datetime.now().strftime("%d de %B de %Y, %H:%M")
+    try:
+        if request.method == 'POST':
+            year = int(request.POST.get('year'))
+            month = int(request.POST.get('month'))
+        else:
+            year = int(request.GET.get('year'))
+            month = int(request.GET.get('month'))
 
-    # Get all payments for the specified month
-    payments = PaymentReport.objects.filter(payment_date__year=year, payment_date__month=month)
-    total_income = sum(payment.amount_paid for payment in payments)
+        # Create the PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        styles = getSampleStyleSheet()
 
-    # Get all expenses for the specified month
-    expenses = ExpenseReport.objects.filter(expense_date__year=year, expense_date__month=month)
-    total_expenses = sum(expense.amount for expense in expenses)
+        # Title
+        title = f"Reporte de Balance Mensual - {month}/{year}"
+        elements.append(Paragraph(title, styles['Heading1']))
+        elements.append(Spacer(1, 12))
 
-    # Calculate balance
-    balance = total_income - total_expenses
+        # Get data
+        payments = PaymentReport.objects.filter(
+            payment_date__year=year,
+            payment_date__month=month
+        ).select_related('user')
+        
+        expenses = ExpenseReport.objects.filter(
+            expense_date__year=year,
+            expense_date__month=month
+        ).select_related('user')
 
-    # Create the PDF
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    elements = []
+        # Calculate totals
+        total_income = sum(payment.amount_paid for payment in payments)
+        total_expenses = sum(expense.amount for expense in expenses)
+        total_balance = total_income - total_expenses
 
-    # Styles
-    styles = getSampleStyleSheet()
-    title_style = styles['Heading1']
-    subtitle_style = styles['Heading2']
-    normal_style = styles['Normal']
+        # Summary Table
+        summary_data = [
+            ['Resumen Financiero', 'Monto'],
+            ['Total Ingresos', f"${total_income:,.2f}"],
+            ['Total Gastos', f"${total_expenses:,.2f}"],
+            ['Balance Final', f"${total_balance:,.2f}"]
+        ]
 
-    # Title
-    elements.append(Paragraph(f"Reporte de Balance Mensual - {month_name[month]} {year}", title_style))
-    elements.append(Spacer(1, 12))
-    
-    # Creation Date
-    elements.append(Paragraph(f"Fecha de creación: {report_creation_date}", normal_style))
-    elements.append(Spacer(1, 12))
+        summary_table = Table(summary_data)
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f5f5f5')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 20))
 
-    # Summary
-    summary_data = [
-        ['Ingresos Totales', f"${total_income:.2f}"],
-        ['Gastos Totales', f"${total_expenses:.2f}"],
-        ['Balance', f"${balance:.2f}"]
-    ]
-    summary_table = Table(summary_data)
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.beige),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 14),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 12),
-        ('TOPPADDING', (0, 1), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(summary_table)
-    elements.append(Spacer(1, 24))
+        # Payments Detail
+        elements.append(Paragraph("Detalle de Ingresos", styles['Heading2']))
+        elements.append(Spacer(1, 12))
 
-    # Income details
-    elements.append(Paragraph("Desglose de Ingresos", subtitle_style))
-    elements.append(Spacer(1, 12))
-    income_data = [['Fecha', 'Departamento', 'Monto']]
-    for payment in payments:
-        income_data.append([
-            payment.payment_date.strftime('%d/%m/%Y'),
-            payment.user.apartment_number,
-            f"${payment.amount_paid:.2f}"
-        ])
-    income_data.append(['Total Ingresos', '', f"${total_income:.2f}"])
-    income_table = Table(income_data)
-    income_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('TOPPADDING', (0, 1), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(income_table)
-    elements.append(Spacer(1, 24))
+        if payments.exists():
+            payment_data = [['Fecha', 'Departamento', 'Método de Pago', 'Monto']]
+            for payment in payments:
+                payment_data.append([
+                    payment.payment_date.strftime('%d/%m/%Y'),
+                    payment.user.apartment_number or 'N/A',
+                    payment.get_payment_method_display(),
+                    f"${payment.amount_paid:,.2f}"
+                ])
+            payment_data.append(['TOTAL', '', '', f"${total_income:,.2f}"])
 
-    # Expense details
-    elements.append(Paragraph("Desglose de Gastos", subtitle_style))
-    elements.append(Spacer(1, 12))
-    expense_data = [['Fecha', 'Concepto', 'Monto']]
-    for expense in expenses:
-        expense_data.append([
-            expense.expense_date.strftime('%d/%m/%Y'),
-            expense.expense_concept,
-            f"${expense.amount:.2f}"
-        ])
-    expense_data.append(['Total Gastos', '', f"${total_expenses:.2f}"])
-    expense_table = Table(expense_data)
-    expense_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('TOPPADDING', (0, 1), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, -1), (-1, -1), 6),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    elements.append(expense_table)
+            payment_table = Table(payment_data, colWidths=['20%', '25%', '35%', '20%'])
+            payment_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (-1, 1), (-1, -1), 'RIGHT'),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f5f5f5')),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ]))
+            elements.append(payment_table)
+        else:
+            elements.append(Paragraph("No hay ingresos registrados para este período", styles['Normal']))
 
-    # Generate the PDF
-    doc.build(elements)
-    pdf = buffer.getvalue()
-    buffer.close()
+        elements.append(Spacer(1, 20))
 
-    # Create HTTP response
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="monthly_balance_report_{year}_{month}.pdf"'
-    response.write(pdf)
+        # Expenses Detail
+        elements.append(Paragraph("Detalle de Gastos", styles['Heading2']))
+        elements.append(Spacer(1, 12))
 
-    return response
+        if expenses.exists():
+            expense_data = [['Fecha', 'Concepto', 'Método de Pago', 'Monto']]
+            for expense in expenses:
+                expense_data.append([
+                    expense.expense_date.strftime('%d/%m/%Y'),
+                    expense.expense_concept,
+                    expense.get_payment_method_display(),
+                    f"${expense.amount:,.2f}"
+                ])
+            expense_data.append(['TOTAL', '', '', f"${total_expenses:,.2f}"])
 
+            expense_table = Table(expense_data, colWidths=['20%', '25%', '35%', '20%'])
+            expense_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (-1, 1), (-1, -1), 'RIGHT'),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f5f5f5')),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ]))
+            elements.append(expense_table)
+        else:
+            elements.append(Paragraph("No hay gastos registrados para este período", styles['Normal']))
+
+        # Build PDF
+        doc.build(elements)
+        pdf = buffer.getvalue()
+        buffer.close()
+
+        # Create response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="balance_mensual_{month_name[month]}_{year}.pdf"'
+        response.write(pdf)
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error generating balance report: {str(e)}")
+        messages.error(request, 'Error al generar el reporte. Por favor, inténtelo de nuevo.')
+        return redirect('panel')
 
 ## forgot password view:
 
