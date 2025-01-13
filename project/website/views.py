@@ -38,6 +38,7 @@ from .forms import ExpenseUploadForm
 from .models import PaymentReport, ExpenseReport
 from .forms import AnnouncementForm
 import logging
+from .utils import send_payment_confirmation_emails
 
 ## forgot password configuration:
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -258,10 +259,21 @@ def pagos(request):
                 uploaded_by=request.user
             )
 
+            # Send confirmation emails
+            email_sent = send_payment_confirmation_emails(payment)
+            
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': 'Comprobante de pago subido exitosamente.'})
+                response_data = {
+                    'success': True, 
+                    'message': 'Comprobante de pago subido exitosamente.'
+                }
+                if not email_sent:
+                    response_data['warning'] = 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.'
+                return JsonResponse(response_data)
             else:
                 messages.success(request, 'Comprobante de pago subido exitosamente.')
+                if not email_sent:
+                    messages.warning(request, 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.')
                 return redirect('dashboard')
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -272,7 +284,6 @@ def pagos(request):
         form = PaymentUploadForm()
     
     return render(request, 'pagos.html', {'form': form})
-
 
 @login_required
 def qys(request):

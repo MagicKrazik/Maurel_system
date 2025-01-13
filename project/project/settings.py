@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -161,16 +165,28 @@ CACHES = {
     }
 }
 
-
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'torresdelmaurel@gmail.com'
-EMAIL_HOST_PASSWORD = 'ozll gvfg olbd pdlx'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'torresdelmaurel@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Torres del Maurel <torresdelmaurel@gmail.com>')
+SERVER_EMAIL = EMAIL_HOST_USER
 
-DEFAULT_FROM_EMAIL = 'torresdelmaurel@gmail.com'
 
-PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
+# Development settings
+if DEBUG:
+    EMAIL_BACKEND = os.environ.get(
+        'EMAIL_BACKEND',
+        'django.core.mail.backends.smtp.EmailBackend'
+    )
+
+# Email timeout and other settings
+EMAIL_TIMEOUT = 30
+EMAIL_USE_LOCALTIME = True
+EMAIL_SUBJECT_PREFIX = '[Torres del Maurel] '
+
 
 AUTH_USER_MODEL = 'website.CustomUser'

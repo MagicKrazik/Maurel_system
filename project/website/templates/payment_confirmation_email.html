@@ -1,0 +1,24 @@
+{% autoescape off %}
+Estimado(a) {{ user.get_username }},
+
+Este correo es para confirmar que hemos recibido su pago:
+
+Detalles del pago:
+- Monto: ${{ payment.amount_paid }}
+- Fecha: {{ payment.payment_date|date:"d/m/Y" }}
+- Método de pago: {{ payment.get_payment_method_display }}
+{% if payment.comments %}
+- Comentarios: {{ payment.comments }}
+{% endif %}
+
+Su pago ha sido registrado exitosamente en nuestro sistema.
+Se adjunta a este correo el comprobante de pago en formato PDF.
+
+Guarde este correo y el archivo adjunto para futuras referencias.
+
+Gracias por su puntualidad.
+
+Saludos cordiales,
+Admon Edif 121 - Torres del Maurel.
+
+{% endautoescape %}

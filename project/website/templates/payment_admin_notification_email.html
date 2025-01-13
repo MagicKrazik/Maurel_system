@@ -1,0 +1,20 @@
+{% autoescape off %}
+Nuevo pago registrado
+
+Detalles del pago:
+- Usuario: {{ payment.user.get_username }} (Departamento: {{ payment.user.apartment_number }})
+- Monto: ${{ payment.amount_paid }}
+- Fecha: {{ payment.payment_date|date:"d/m/Y" }}
+- Método de pago: {{ payment.get_payment_method_display }}
+{% if payment.comments %}
+- Comentarios: {{ payment.comments }}
+{% endif %}
+
+Se adjunta a este correo el comprobante de pago en formato PDF para su revisión.
+
+El comprobante de pago también está disponible en el panel administrativo.
+
+Este es un correo automático, por favor no responda a esta dirección.
+
+© {% now "Y" %} Torres del Maurel
+{% endautoescape %}

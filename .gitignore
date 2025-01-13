@@ -1,2 +1,5 @@
 venv/
 Files_to_use/
+.env
+*.pyc
+__pychache__/
