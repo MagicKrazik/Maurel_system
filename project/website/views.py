@@ -61,8 +61,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 
 
-
-
+def aviso_priv(request):
+    return render(request, 'aviso_priv.html')
 
 def home(request):
     return render(request, 'home.html')
@@ -148,7 +148,7 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    start_date = timezone.datetime(2024, 9, 1).date()
+    start_date = timezone.datetime(2025, 1, 1).date()
     end_date = start_date + relativedelta(years=5, months=-1)
     current_date = timezone.now().date()
 

@@ -206,3 +206,15 @@ body {
         height: 2px;
     }
 }
+
+.aviso-link {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.aviso-link:hover {
+    color: #3a80d2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}

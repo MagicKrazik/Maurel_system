@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Torres del Maurel - Aviso de Privacidad{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/aviso_priv.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="privacy-notice-container">
+    <h1>Aviso de Privacidad - Sistema de Administración Maurel</h1>
+
+    <section class="identity-section">
+        <h2>1. Identidad y domicilio del responsable</h2>
+        <p>
+            Carlos Horacio Olivares Cordero, con domicilio en Av. del imán 121 Torres del Maurel int 001, Coyoacán CDMX 04530, es responsable del tratamiento de los datos personales proporcionados por usted (en adelante, el "Usuario") a través de nuestra aplicación de administración del condominio Torres del Maurel edificio 121.
+        </p>
+    </section>
+
+    <section class="data-collection-section">
+        <h2>2. Datos personales que recabamos</h2>
+        <p>Para el uso de nuestra aplicación, recabaremos los siguientes datos personales:</p>
+        <ul>
+            <li>Número de departamento (que funcionará como nombre de usuario)</li>
+            <li>Correo electrónico personal - para recuperar password</li>
+            <li>Número de teléfono - información de contacto</li>
+            <li>Contraseña</li>
+            <li>Comprobantes de pago (en formato de fotografía)</li>
+        </ul>
+    </section>
+
+    <section class="data-usage-section">
+        <h2>3. Finalidades del tratamiento de los datos personales</h2>
+        <p>Los datos personales que recabamos serán utilizados para las siguientes finalidades:</p>
+        <ol type="a">
+            <li>Gestionar su cuenta de usuario en la aplicación.</li>
+            <li>Permitir la recuperación de su contraseña en caso necesario.</li>
+            <li>Facilitar la comunicación entre la administración y los condóminos.</li>
+            <li>Registrar y verificar los pagos realizados por los condóminos.</li>
+            <li>Mejorar la experiencia de usuario en nuestra aplicación.</li>
+        </ol>
+    </section>
+
+    <section class="data-transfer-section">
+        <h2>4. Transferencia de datos personales</h2>
+        <p>
+            Sus datos personales no serán transferidos a terceros sin su consentimiento, excepto en los casos previstos por la ley.
+        </p>
+    </section>
+
+    <section class="security-measures-section">
+        <h2>5. Medidas de seguridad</h2>
+        <p>
+            Implementamos medidas de seguridad administrativas, técnicas y físicas para proteger sus datos personales contra daño, pérdida, alteración, destrucción o el uso, acceso o tratamiento no autorizado.
+        </p>
+    </section>
+
+    <section class="arco-rights-section">
+        <h2>6. Derechos ARCO</h2>
+        <p>
+            Usted tiene derecho a conocer qué datos personales tenemos de usted, para qué los utilizamos y las condiciones del uso que les damos (Acceso). Asimismo, es su derecho solicitar la corrección de su información personal en caso de que esté desactualizada, sea inexacta o incompleta (Rectificación); que la eliminemos de nuestros registros o bases de datos cuando considere que la misma no está siendo utilizada conforme a los principios, deberes y obligaciones previstas en la normativa (Cancelación); así como oponerse al uso de sus datos personales para fines específicos (Oposición). Estos derechos se conocen como derechos ARCO.
+        </p>
+        <p>
+            Para ejercer cualquiera de los derechos ARCO, usted deberá presentar la solicitud respectiva a través del siguiente medio: correo electronico carlos.olivare@dive.it.com.
+        </p>
+    </section>
+
+    <section class="changes-section">
+        <h2>7. Cambios al aviso de privacidad</h2>
+        <p>
+            Nos reservamos el derecho de efectuar en cualquier momento modificaciones o actualizaciones al presente aviso de privacidad, para la atención de novedades legislativas o jurisprudenciales, políticas internas, nuevos requerimientos para la prestación u ofrecimiento de nuestros servicios o productos y prácticas del mercado.
+        </p>
+        <p>
+            Estas modificaciones estarán disponibles al público a través de los siguientes medios: (i) anuncios visibles en nuestro condominio; (ii) en nuestra aplicación; (iii) o se las haremos llegar al último correo electrónico que nos haya proporcionado.
+        </p>
+    </section>
+
+    <section class="consent-section">
+        <h2>8. Consentimiento</h2>
+        <p>
+            Al utilizar nuestra aplicación y proporcionar sus datos personales, usted acepta los términos de este Aviso de Privacidad y otorga su consentimiento para el tratamiento de sus datos personales de acuerdo con lo aquí establecido.
+        </p>
+    </section>
+
+    <footer class="privacy-notice-footer">
+        <p>Fecha de última actualización: 01 - Enero - 2025</p>
+    </footer>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/aviso_priv.js' %}"></script>
+{% endblock %}

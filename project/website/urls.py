@@ -7,6 +7,7 @@ from .views import CustomPasswordResetView, password_reset_done, password_reset_
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('aviso_priv/', views.aviso_priv, name='aviso_priv'),
     path('login/', views.login, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
