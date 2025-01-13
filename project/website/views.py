@@ -37,6 +37,7 @@ from django.db import transaction
 from .forms import ExpenseUploadForm
 from .models import PaymentReport, ExpenseReport
 from .forms import AnnouncementForm
+import logging
 
 ## forgot password configuration:
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -59,7 +60,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-
+logger = logging.getLogger(__name__)
 
 def aviso_priv(request):
     return render(request, 'aviso_priv.html')
@@ -417,7 +418,7 @@ def move_payment_proofs():
 def documentos(request):
     documents = Document.objects.all()
     
-    start_date = timezone.datetime(2024, 9, 1).date()
+    start_date = timezone.datetime(2025, 1, 1).date()
     end_date = start_date + relativedelta(years=5, months=-1)
     current_date = timezone.now().date()
 
@@ -581,53 +582,6 @@ def panel(request):
     return render(request, 'panel.html', context)
 
 
-## forgot password view:
-
-class CustomPasswordResetForm(PasswordResetForm):
-    def send_mail(self, subject_template_name, email_template_name,
-                  context, from_email, to_email, html_email_template_name=None):
-        try:
-            # The reset URL is already provided in the context
-            reset_url = context.get('password_reset_url', '')
-            if not reset_url:
-                # Fallback to constructing the URL if it's not provided
-                protocol = context.get('protocol', 'http')
-                domain = context.get('domain', '')
-                uid = context.get('uid', '')
-                token = context.get('token', '')
-                reset_url = f"{protocol}://{domain}/reset/{uid}/{token}/"
-
-            # Update the context with the reset URL
-            context.update({'reset_url': reset_url})
-
-            subject = "Restablecer tu contraseña - Torres del Maurel"
-            email_message = render_to_string(email_template_name, context)
-
-            send_mail(
-                subject,
-                email_message,
-                from_email,
-                [to_email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f"Error sending password reset email: {str(e)}")
-            print(f"Context: {context}")
-            raise  # Re-raise the exception after logging
-
-class CustomPasswordResetView(PasswordResetView):
-    form_class = CustomPasswordResetForm
-    email_template_name = 'password_reset_email.html'
-    
-    def form_valid(self, form):
-        return super().form_valid(form)
-
-# Add these views for completing the password reset flow
-password_reset_done = PasswordResetDoneView.as_view(template_name='password_reset_done.html')
-password_reset_confirm = PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html', success_url=reverse_lazy('password_reset_complete'))
-password_reset_complete = PasswordResetCompleteView.as_view(template_name='password_reset_complete.html')
-
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def generate_monthly_balance_report(request):
@@ -765,3 +719,67 @@ def generate_monthly_balance_report(request):
     response.write(pdf)
 
     return response
+
+
+## forgot password view:
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        try:
+            # The reset URL is already provided in the context
+            reset_url = context.get('password_reset_url', '')
+            if not reset_url:
+                # Fallback to constructing the URL if it's not provided
+                protocol = context.get('protocol', 'http')
+                domain = context.get('domain', '')
+                uid = context.get('uid', '')
+                token = context.get('token', '')
+                reset_url = f"{protocol}://{domain}/reset/{uid}/{token}/"
+
+            # Update the context with the reset URL
+            context.update({'reset_url': reset_url})
+
+            subject = "Restablecer tu contraseña - Torres del Maurel"
+            email_message = render_to_string(email_template_name, context)
+
+            send_mail(
+                subject,
+                email_message,
+                from_email,
+                [to_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Error sending password reset email: {str(e)}")
+            print(f"Context: {context}")
+            raise  # Re-raise the exception after logging
+
+class CustomPasswordResetView(PasswordResetView):
+    form_class = CustomPasswordResetForm
+    template_name = 'password_reset_form.html'
+    email_template_name = 'password_reset_email.html'
+    success_url = reverse_lazy('password_reset_done')
+    
+    def get_template_names(self):
+        template_names = super().get_template_names()
+        logger.debug(f"Template names for password reset: {template_names}")
+        return template_names
+    
+    def form_valid(self, form):
+        logger.debug("Password reset form submitted successfully")
+        return super().form_valid(form)
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Tu contraseña ha sido actualizada exitosamente.')
+        return super().form_valid(form)
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'password_reset_complete.html'
