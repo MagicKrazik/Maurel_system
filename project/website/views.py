@@ -148,6 +148,7 @@ def logout_view(request):
 
 
 
+
 @login_required
 def dashboard(request):
     start_date = timezone.datetime(2025, 1, 1).date()
@@ -801,3 +802,6 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
+
+
+# === CODE END ===     
