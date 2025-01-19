@@ -151,7 +151,7 @@ class Document(models.Model):
         ('mantenimiento', 'Mantenimiento y Cotizaciones'),
         ('minutas', 'Minutas'),
         ('reglamentos', 'Reglamentos'),
-        ('otros', 'Otros'),
+        ('reportes', 'Reportes'),
     ]
 
     title = models.CharField(max_length=255)

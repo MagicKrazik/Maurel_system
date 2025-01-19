@@ -398,3 +398,39 @@ def send_payment_confirmation_emails(payment):
         # Log the error but don't prevent the payment from being processed
         print(f"Error sending payment confirmation emails: {str(e)}")
         return False
+    
+
+
+def send_qys_notification_emails(qys):
+    """
+    Send QyS notification emails to admin users.
+    """
+    try:
+        context = {
+            'qys': qys,
+        }
+
+        # Send notification to admin users
+        admin_users = get_user_model().objects.filter(is_superuser=True)
+        if admin_users.exists():
+            admin_subject = f"Nueva {qys.get_type_display()} - Departamento {qys.apartment_number}"
+            admin_message = render_to_string('qys_admin_notification_email.html', context)
+            
+            admin_emails = list(admin_users.values_list('email', flat=True))
+            
+            admin_email = EmailMessage(
+                subject=admin_subject,
+                body=admin_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=admin_emails
+            )
+            
+            if qys.attachment:
+                admin_email.attach_file(qys.attachment.path)
+            
+            admin_email.send(fail_silently=False)
+            
+        return True
+    except Exception as e:
+        print(f"Error sending QyS notification emails: {str(e)}")
+        return False

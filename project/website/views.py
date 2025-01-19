@@ -40,6 +40,7 @@ from .forms import AnnouncementForm
 import logging
 from .utils import send_payment_confirmation_emails
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from .utils import send_qys_notification_emails
 
 ## forgot password configuration:
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -316,8 +317,12 @@ def qys(request):
                 qys = form.save(commit=False)
                 qys.user = request.user
                 qys.save()
+
+                # Send notification email
+                email_sent = send_qys_notification_emails(qys)
+                
                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                    return JsonResponse({
+                    response_data = {
                         'success': True,
                         'message': 'Su queja o sugerencia ha sido enviada exitosamente.',
                         'new_qys': {
@@ -332,11 +337,15 @@ def qys(request):
                             'is_staff': request.user.is_staff,
                             'status_choices': qys.STATUS_CHOICES,
                         }
-                    })
+                    }
+                    return JsonResponse(response_data)
+                
                 messages.success(request, 'Su queja o sugerencia ha sido enviada exitosamente.')
                 return redirect('qys')
+                
             elif request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
+                
         elif 'update_status' in request.POST and request.user.is_staff:
             qys_id = request.POST.get('qys_id')
             new_status = request.POST.get('status')
@@ -358,6 +367,7 @@ def qys(request):
                     })
                 messages.error(request, 'Estado inválido.')
             return redirect('qys')
+            
         elif 'delete_qys' in request.POST and request.user.is_staff:
             qys_id = request.POST.get('qys_id')
             return delete_qys(request, qys_id)
@@ -482,7 +492,7 @@ def documentos(request):
         'gastos_pasivos': filtered_documents.filter(document_type='gastos_pasivos'),
         'minutas': documents.filter(document_type='minutas'),
         'reglamentos': documents.filter(document_type='reglamentos'),
-        'otros': documents.filter(document_type='otros'),
+        'reportes': documents.filter(document_type='reportes'),
     }
 
     # Create a dictionary for document type headers
@@ -492,7 +502,7 @@ def documentos(request):
         'gastos_pasivos': 'Gastos y Pasivos',
         'minutas': 'Minutas',
         'reglamentos': 'Reglamentos',
-        'otros': 'Otros Documentos',
+        'reportes': 'Reportes',
     }
 
     context = {
@@ -505,6 +515,38 @@ def documentos(request):
     }
     return render(request, 'documentos.html', context)
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def delete_document(request, document_id):
+    try:
+        document = get_object_or_404(Document, id=document_id)
+        
+        # Delete file from storage
+        if document.file:
+            if default_storage.exists(document.file.name):
+                default_storage.delete(document.file.name)
+        
+        # Delete database record
+        document.delete()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Documento eliminado exitosamente.'
+            })
+        
+        messages.success(request, 'Documento eliminado exitosamente.')
+        return redirect('documentos')
+        
+    except Exception as e:
+        logger.error(f"Error deleting document: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Error al eliminar el documento.'
+            })
+        messages.error(request, 'Error al eliminar el documento.')
+        return redirect('documentos')
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)

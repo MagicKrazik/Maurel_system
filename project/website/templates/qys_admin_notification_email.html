@@ -1,0 +1,21 @@
+{% autoescape off %}
+Nueva {{ qys.get_type_display }} Registrada
+
+Detalles de la solicitud:
+- Usuario: {{ qys.user.get_username }} (Departamento: {{ qys.apartment_number }})
+- Tipo: {{ qys.get_type_display }}
+- Categoría: {{ qys.get_category_display }}
+- Fecha: {{ qys.created_at|date:"d/m/Y H:i" }}
+- Estado: {{ qys.get_status_display }}
+
+Descripción:
+{{ qys.description }}
+
+{% if qys.attachment %}
+Se ha adjuntado un archivo a esta {{ qys.get_type_display }}.
+{% endif %}
+
+Este es un correo automático, por favor no responda a esta dirección.
+
+© {% now "Y" %} Torres del Maurel
+{% endautoescape %}

@@ -17,6 +17,7 @@ urlpatterns = [
     path('initial-profile-update/', views.initial_profile_update, name='initial_profile_update'),
     path('profile/', views.profile, name='profile'),
     path('documentos/', views.documentos, name='documentos'),
+    path('delete_document/<int:document_id>/', views.delete_document, name='delete_document'),
     path('documentos/upload/', views.upload_document, name='upload_document'),
     path('gastos/', views.gastos, name='gastos'),
     path('password_reset/', CustomPasswordResetView.as_view(template_name='password_reset_form.html',email_template_name='password_reset_email.html',success_url='/password_reset/done/'), name='password_reset'),

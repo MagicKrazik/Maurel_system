@@ -287,3 +287,109 @@ h2 {
         font-size: 1.8rem;
     }
 }
+
+/* Base styles */
+.documentos-container {
+    padding: 1rem;
+    margin: 50px auto 25px;
+    max-width: 100%;
+    background-color: #2A2B2A;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Document Item Container */
+.document-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    background-color: #2c2c2c;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.document-link {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+/* Delete Button */
+.delete-document-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 2;
+}
+
+.document-item:hover .delete-document-btn {
+    opacity: 1;
+}
+
+.delete-document-btn:hover {
+    transform: translateY(-50%) scale(1.1);
+    color: #ff6666;
+}
+
+/* Document Info */
+.document-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-right: 40px; /* Space for delete button */
+    overflow: hidden;
+}
+
+.document-title {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .document-item {
+        padding-right: 40px;
+    }
+
+    .delete-document-btn {
+        opacity: 1;
+        font-size: 1.1rem;
+        padding: 0.4rem;
+    }
+
+    .document-info {
+        margin-right: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .document-item {
+        padding-right: 35px;
+    }
+
+    .delete-document-btn {
+        font-size: 1rem;
+        right: 5px;
+    }
+
+    .document-info {
+        margin-right: 15px;
+    }
+}
