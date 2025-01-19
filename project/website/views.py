@@ -151,81 +151,95 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    start_date = timezone.datetime(2025, 1, 1).date()
-    end_date = start_date + relativedelta(years=5, months=-1)
-    current_date = timezone.now().date()
+    try:
+        start_date = timezone.datetime(2025, 1, 1).date()
+        end_date = start_date + relativedelta(years=5, months=-1)
+        current_date = timezone.now().date()
 
-    selected_date = request.GET.get('date')
-    if selected_date:
-        selected_year, selected_month = map(int, selected_date.split('-'))
-        selected_date = datetime(selected_year, selected_month, 1).date()
-    else:
-        selected_date = current_date
-        selected_year, selected_month = selected_date.year, selected_date.month
+        selected_date = request.GET.get('date')
+        if selected_date:
+            selected_year, selected_month = map(int, selected_date.split('-'))
+            selected_date = datetime(selected_year, selected_month, 1).date()
+        else:
+            selected_date = current_date
+            selected_year, selected_month = selected_date.year, selected_date.month
 
-    debtors = CustomUser.objects.filter(is_debtor=True)
-    
-    # Calculate monthly data
-    income_data = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
-    expenses_data = float(ExpenseReport.objects.filter(
-        expense_date__year=selected_year,
-        expense_date__month=selected_month
-    ).aggregate(Sum('amount'))['amount__sum'] or 0)
+        # Get active announcements first to ensure they exist
+        active_announcements = Announcement.objects.filter(
+            is_active=True
+        ).order_by('-created_at').select_related('created_by')
 
-    # Calculate monthly balance
-    monthly_balance = income_data - expenses_data
-
-    # Get yearly data arrays
-    yearly_income_data = []
-    yearly_expenses_data = []
-    for month in range(1, 13):
-        month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
-        month_expenses = float(ExpenseReport.objects.filter(
+        # Get debtors
+        debtors = CustomUser.objects.filter(is_debtor=True)
+        
+        # Calculate financial data
+        income_data = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
+        expenses_data = float(ExpenseReport.objects.filter(
             expense_date__year=selected_year,
-            expense_date__month=month
+            expense_date__month=selected_month
         ).aggregate(Sum('amount'))['amount__sum'] or 0)
-        yearly_income_data.append(month_income)
-        yearly_expenses_data.append(month_expenses)
 
-    # Calculate yearly balance
-    yearly_balance = sum(yearly_income_data) - sum(yearly_expenses_data)
+        # Monthly balance
+        monthly_balance = income_data - expenses_data
 
-    # Generate month-year pairs for the dropdown
-    date_range = []
-    current = start_date
-    while current <= end_date:
-        date_range.append((current.year, current.month))
-        current += relativedelta(months=1)
+        # Yearly data
+        yearly_income_data = []
+        yearly_expenses_data = []
+        for month in range(1, 13):
+            month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
+            month_expenses = float(ExpenseReport.objects.filter(
+                expense_date__year=selected_year,
+                expense_date__month=month
+            ).aggregate(Sum('amount'))['amount__sum'] or 0)
+            yearly_income_data.append(month_income)
+            yearly_expenses_data.append(month_expenses)
 
-    if request.user.is_staff or request.user.is_superuser:
-        context = {
+        yearly_balance = sum(yearly_income_data) - sum(yearly_expenses_data)
+
+        # Generate date range for dropdown
+        date_range = []
+        current = start_date
+        while current <= end_date:
+            date_range.append((current.year, current.month))
+            current += relativedelta(months=1)
+
+        # Base context depending on user type
+        if request.user.is_staff or request.user.is_superuser:
+            context = {
+                'debtors': debtors,
+            }
+        else:
+            current_fees, created = MonthlyFees.objects.get_or_create(
+                user=request.user,
+                month=current_date.replace(day=1)
+            )
+            context = {
+                'current_fees': current_fees,
+                'current_month': current_date,
+            }
+
+        # Update context with all data
+        context.update({
+            'active_announcements': active_announcements,
             'debtors': debtors,
-        }
-    else:
-        current_fees, created = MonthlyFees.objects.get_or_create(user=request.user, month=current_date.replace(day=1))
-        context = {
-            'current_fees': current_fees,
-            'current_month': current_date,
-        }
-    
-    active_announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')
+            'income_data': income_data,
+            'expenses_data': expenses_data,
+            'monthly_balance': monthly_balance,
+            'yearly_balance': yearly_balance,
+            'yearly_income_data': json.dumps(yearly_income_data),
+            'yearly_expenses_data': json.dumps(yearly_expenses_data),
+            'selected_year': selected_year,
+            'selected_month': selected_month,
+            'selected_date': selected_date,
+            'date_range': date_range,
+        })
 
-    context.update({
-        'debtors': debtors,
-        'income_data': income_data,
-        'expenses_data': expenses_data,
-        'monthly_balance': monthly_balance,
-        'yearly_balance': yearly_balance,
-        'yearly_income_data': json.dumps(yearly_income_data),
-        'yearly_expenses_data': json.dumps(yearly_expenses_data),
-        'selected_year': selected_year,
-        'selected_month': selected_month,
-        'selected_date': selected_date,
-        'date_range': date_range,
-        'active_announcements': active_announcements,
-    })
+        return render(request, 'dashboard.html', context)
 
-    return render(request, 'dashboard.html', context)
+    except Exception as e:
+        logger.error(f"Error in dashboard view: {str(e)}")
+        messages.error(request, "Error al cargar el dashboard. Por favor, inténtelo de nuevo.")
+        return redirect('home')
 
 
 @login_required
@@ -540,64 +554,141 @@ def gastos(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def panel(request):
-    apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
-    current_month = timezone.now().date().replace(day=1)
-    announcements = Announcement.objects.all().order_by('-created_at')
-    
-    if request.method == 'POST':
-        if 'create_announcement' in request.POST:
-            form = AnnouncementForm(request.POST)
-            if form.is_valid():
-                announcement = form.save(commit=False)
-                announcement.created_by = request.user
-                announcement.save()
-                messages.success(request, 'Anuncio creado exitosamente.')
-                return redirect('panel')
-        elif 'edit_announcement' in request.POST:
-            announcement_id = request.POST.get('announcement_id')
-            announcement = get_object_or_404(Announcement, id=announcement_id)
-            form = AnnouncementForm(request.POST, instance=announcement)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Anuncio actualizado exitosamente.')
-                return redirect('panel')
-        elif 'delete_announcement' in request.POST:
-            announcement_id = request.POST.get('announcement_id')
-            announcement = get_object_or_404(Announcement, id=announcement_id)
-            announcement.delete()
-            messages.success(request, 'Anuncio eliminado exitosamente.')
-            return redirect('panel')
-        else:
-            # Existing code for handling apartment fees...
-            apartment_id = request.POST.get('apartment_id')
-            user = CustomUser.objects.get(id=apartment_id)
-            
-            fees, created = MonthlyFees.objects.get_or_create(user=user, month=current_month)
-            
-            fees.gas_fee = Decimal(request.POST.get('gas_fee', 0))
-            fees.maintenance_fee = Decimal(request.POST.get('maintenance_fee', 1200))
-            fees.parking_fee = Decimal(request.POST.get('parking_fee', 0))
-            fees.extra_fee = Decimal(request.POST.get('extra_fee', 500))
-            fees.past_due = Decimal(request.POST.get('past_due', 0))
-            fees.is_paid = request.POST.get('is_paid') == 'on'
-            fees.paid_amount = Decimal(request.POST.get('paid_amount', 0))
-            fees.save()
-            
-            user.is_debtor = request.POST.get('is_debtor') == 'on'
-            user.save()
-            
-            messages.success(request, f'Fees updated for Apartment {user.apartment_number}')
-    
-    for apartment in apartments:
-        MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
-    
-    context = {
-        'apartments': apartments,
-        'current_month': current_month,
-        'announcements': announcements,
-        'announcement_form': AnnouncementForm(),
-    }
-    return render(request, 'panel.html', context)
+    try:
+        # Get initial data
+        apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
+        current_month = timezone.now().date().replace(day=1)
+        announcements = Announcement.objects.all().order_by('-created_at')
+
+        if request.method == 'POST':
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+            # Handle announcements
+            if 'create_announcement' in request.POST:
+                try:
+                    title = request.POST.get('title')
+                    content = request.POST.get('content')
+                    is_active = request.POST.get('is_active') == 'on'
+
+                    # Create announcement
+                    announcement = Announcement.objects.create(
+                        title=title,
+                        content=content,
+                        is_active=is_active,
+                        created_by=request.user
+                    )
+
+                    if is_ajax:
+                        return JsonResponse({'success': True})
+                    messages.success(request, 'Anuncio creado exitosamente.')
+                    return redirect('panel')
+                except Exception as e:
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': str(e)})
+                    messages.error(request, f'Error al crear anuncio: {str(e)}')
+
+            elif 'edit_announcement' in request.POST:
+                try:
+                    announcement_id = request.POST.get('announcement_id')
+                    announcement = Announcement.objects.get(id=announcement_id)
+                    
+                    # Update announcement fields
+                    announcement.title = request.POST.get('title')
+                    announcement.content = request.POST.get('content')
+                    announcement.is_active = request.POST.get('is_active') == 'on'
+                    announcement.save()
+
+                    if is_ajax:
+                        return JsonResponse({'success': True})
+                    messages.success(request, 'Anuncio actualizado exitosamente.')
+                    return redirect('panel')
+                except Announcement.DoesNotExist:
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': 'Anuncio no encontrado'})
+                    messages.error(request, 'Anuncio no encontrado.')
+                    return redirect('panel')
+                except Exception as e:
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': str(e)})
+                    messages.error(request, f'Error al actualizar anuncio: {str(e)}')
+
+            elif 'delete_announcement' in request.POST:
+                try:
+                    announcement_id = request.POST.get('announcement_id')
+                    announcement = Announcement.objects.get(id=announcement_id)
+                    announcement.delete()
+
+                    if is_ajax:
+                        return JsonResponse({'success': True})
+                    messages.success(request, 'Anuncio eliminado exitosamente.')
+                    return redirect('panel')
+                except Announcement.DoesNotExist:
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': 'Anuncio no encontrado'})
+                    messages.error(request, 'Anuncio no encontrado.')
+                    return redirect('panel')
+
+            # Handle apartment fees
+            else:
+                apartment_id = request.POST.get('apartment_id')
+                if apartment_id:
+                    try:
+                        user = CustomUser.objects.get(id=apartment_id)
+                        fees, created = MonthlyFees.objects.get_or_create(
+                            user=user, 
+                            month=current_month
+                        )
+
+                        # Update fees
+                        fees.gas_fee = Decimal(request.POST.get('gas_fee', 0))
+                        fees.maintenance_fee = Decimal(request.POST.get('maintenance_fee', 1200))
+                        fees.parking_fee = Decimal(request.POST.get('parking_fee', 0))
+                        fees.extra_fee = Decimal(request.POST.get('extra_fee', 500))
+                        fees.past_due = Decimal(request.POST.get('past_due', 0))
+                        fees.is_paid = request.POST.get('is_paid') == 'on'
+                        fees.paid_amount = Decimal(request.POST.get('paid_amount', 0))
+                        fees.save()
+
+                        # Update user debtor status
+                        user.is_debtor = request.POST.get('is_debtor') == 'on'
+                        user.save()
+
+                        if is_ajax:
+                            return JsonResponse({
+                                'success': True,
+                                'apartment': {
+                                    'id': user.id,
+                                    'total_fee': str(fees.total_fee),
+                                    'remaining_amount': str(fees.remaining_amount),
+                                    'is_paid': fees.is_paid,
+                                    'is_debtor': user.is_debtor
+                                }
+                            })
+                        messages.success(request, f'Cuotas actualizadas para Departamento {user.apartment_number}')
+                    except Exception as e:
+                        if is_ajax:
+                            return JsonResponse({'success': False, 'errors': str(e)})
+                        messages.error(request, f'Error al actualizar cuotas: {str(e)}')
+
+        # Ensure monthly fees exist for all apartments
+        for apartment in apartments:
+            MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
+
+        # Prepare context
+        context = {
+            'apartments': apartments,
+            'current_month': current_month,
+            'announcements': announcements,
+        }
+
+        return render(request, 'panel.html', context)
+
+    except Exception as e:
+        logger.error(f"Error in panel view: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'errors': 'Error interno del servidor'})
+        messages.error(request, 'Error interno del servidor')
+        return redirect('panel')
 
 
 @login_required
