@@ -2,10 +2,10 @@
 
 .profile-container {
     max-width: 600px;
-    margin: 90px auto 50px;
+    margin: 75px auto 35px;
     padding: 30px;
     background-color: #1e1e1e;
-    border-radius: 8px;
+    border-radius: 3px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     color: #e0e0e0;
 }

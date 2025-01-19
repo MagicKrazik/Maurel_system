@@ -1,8 +1,10 @@
 /* Admin Panel styles */
 .admin-panel {
+    padding: 0.5rem;
+    padding-top: 2.5rem;
+    margin: 30px auto 30px;
+    border-radius: 3px;
     max-width: 100%;
-    margin: 60px auto 20px;
-    padding: 15px;
     background-color: #2A2B2A;
     border-radius: 15px;
     color: #ffffff;
@@ -290,23 +292,7 @@ button.update-btn:hover {
         font-size: 1.4rem;
     }
 
-    .announcements-section {
-        padding: 1.5rem;
-    }
 
-    .announcements-section form,
-    .announcements-section li {
-        padding: 1.25rem;
-    }
-
-    .announcements-section li .announcement-actions {
-        flex-direction: row;
-        justify-content: flex-end;
-    }
-
-    .announcements-section li button {
-        width: auto;
-    }
 
     .apartments-list {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
