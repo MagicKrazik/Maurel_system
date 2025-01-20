@@ -267,9 +267,6 @@ h2 {
         transform: translateY(-2px);
     }
 
-    .document-link:hover {
-        background-color: #3c3c3c;
-    }
 
     .delete-document-btn {
         opacity: 0;
