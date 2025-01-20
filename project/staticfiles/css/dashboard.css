@@ -1,0 +1,386 @@
+/* Mobile-first base styles */
+.dashboard-container {
+    padding: 0.5rem;
+    padding-top: 2.5rem;
+    margin: 30px auto 30px;
+    max-width: 100%;
+    background-color: #2A2B2A;
+    border-radius: 3px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+h1, h2, h3 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 0.4rem;
+}
+
+h2 {
+    font-size: 1.3rem;
+    color: #4a90e2;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
+p {
+    color: white;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Enhanced announcements section */
+.announcements-section {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.announcements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+.announcement-item {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-item h3 {
+    color: #4a90e2;
+    margin-bottom: 0.5rem;
+}
+
+.announcement-item p {
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Optimized current fees section */
+.current-fees {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fees-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.fee-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.fee-item.total {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #4a90e2;
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+.fee-item span:last-child {
+    font-weight: 500;
+}
+
+.fee-item.status .paid {
+    color: #4CAF50;
+}
+
+.fee-item.status .unpaid {
+    color: #f44336;
+}
+
+.fee-item.account-status .positive {
+    color: #4CAF50;
+}
+
+.fee-item.account-status .negative {
+    color: #f44336;
+}
+
+/* Enhanced debtors section */
+.debtors-section {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.debtors-section p {
+    color: white;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.debtors-list {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+.debtor-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #f44336;
+}
+
+.debtor-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+.debtor-amount {
+    color: #f44336;
+    font-weight: bold;
+    font-size: 1rem;
+    display: block;
+    text-align: right;
+}
+
+/* Optimized filter controls */
+.filter-controls {
+    margin-bottom: 1rem;
+}
+
+.filter-controls form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-controls label {
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.filter-controls select,
+.filter-controls button {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    font-size: 0.9rem;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.filter-controls select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+.filter-controls button {
+    background-color: #4a90e2;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.filter-controls button:active {
+    background-color: #3a80d2;
+}
+
+/* Enhanced graphs sections */
+.income-section,
+.expenses-section,
+.balance-section {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.income-graph,
+.expenses-graph,
+.balance-graph {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    height: 250px;
+}
+
+.income-summary,
+.expenses-summary,
+.balance-summary,
+.balance-summary-year {
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.balance-summary-year {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #3a3a3a;
+}
+
+.balance-summary span,
+.balance-summary-year span {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.25rem;
+}
+
+.positive {
+    color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.negative {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Tablet breakpoint */
+@media (min-width: 768px) {
+    .dashboard-container {
+        padding: 1.25rem;
+        margin: 40px auto 25px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    .announcements-list {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .fees-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fee-item.total,
+    .fee-item.account-status {
+        grid-column: span 2;
+    }
+
+    .debtors-list {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .filter-controls form {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+
+    .filter-controls select {
+        flex: 2;
+    }
+
+    .filter-controls button {
+        flex: 1;
+    }
+
+    .income-graph,
+    .expenses-graph,
+    .balance-graph {
+        height: 300px;
+    }
+
+    .income-summary,
+    .expenses-summary,
+    .balance-summary,
+    .balance-summary-year {
+        font-size: 1rem;
+    }
+}
+
+/* Desktop breakpoint */
+@media (min-width: 1024px) {
+    .dashboard-container {
+        padding: 1.5rem;
+        margin: 50px auto 30px;
+        max-width: 1200px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.7rem;
+    }
+
+    .announcement-item:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+    }
+
+    .debtor-card:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+    }
+
+    .filter-controls button:hover {
+        background-color: #3a80d2;
+    }
+
+    .income-summary,
+    .expenses-summary,
+    .balance-summary,
+    .balance-summary-year {
+        font-size: 1.1rem;
+    }
+
+    .income-graph,
+    .expenses-graph,
+    .balance-graph {
+        height: 350px;
+    }
+}
+
+/* High-resolution screens */
+@media (min-width: 1440px) {
+    .dashboard-container {
+        max-width: 1400px;
+    }
+
+    .announcements-list {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+}

@@ -1,0 +1,238 @@
+/* Mobile-first base styles */
+.pagos-container {
+    padding: 0.2rem;
+    margin: 70px auto 30px;
+    padding-top: 1rem;
+    width: 100%;
+    max-width: 800px;
+    background-color: #2A2B2A;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.pagos-container h1 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 0.4rem;
+}
+
+/* Enhanced form groups */
+.form-group {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group label {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Optimized form inputs */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Custom select styling */
+.form-group select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+/* Enhanced file input */
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.form-group input[type="file"]::-webkit-file-upload-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.form-group input[type="file"]::file-selector-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Focus states */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Submit button */
+.form-group button[type="submit"] {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.form-group button[type="submit"]:active {
+    background-color: #3a80d2;
+    transform: scale(0.98);
+}
+
+/* Helper text and errors */
+.small {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 0.5rem;
+    display: block;
+    line-height: 1.4;
+}
+
+.error {
+    color: #f44336;
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    display: block;
+    font-weight: 500;
+}
+
+/* Upload status */
+#upload-status {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+#upload-status.success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+#upload-status.error {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+/* Tablet breakpoint */
+@media (min-width: 768px) {
+    .pagos-container {
+        padding: 1.25rem;
+        margin: 40px auto 25px;
+    }
+
+    .pagos-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        font-size: 1rem;
+    }
+
+    .form-group input[type="file"] {
+        font-size: 1rem;
+    }
+
+    .form-group input[type="file"]::-webkit-file-upload-button,
+    .form-group input[type="file"]::file-selector-button {
+        font-size: 1rem;
+    }
+
+    .small {
+        font-size: 0.9rem;
+    }
+
+    .error {
+        font-size: 0.9rem;
+    }
+
+    #upload-status {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+}
+
+/* Desktop breakpoint */
+@media (min-width: 1024px) {
+    .pagos-container {
+        padding: 1.5rem;
+        margin: 50px auto 30px;
+    }
+
+    .pagos-container h1 {
+        font-size: 2rem;
+    }
+
+    .form-group {
+        padding: 1.5rem;
+    }
+
+    .form-group button[type="submit"]:hover {
+        background-color: #3a80d2;
+        transform: translateY(-1px);
+    }
+
+    .form-group input[type="file"]::-webkit-file-upload-button:hover,
+    .form-group input[type="file"]::file-selector-button:hover {
+        background-color: #3a80d2;
+    }
+}
