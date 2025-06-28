@@ -521,31 +521,44 @@ def delete_document(request, document_id):
     try:
         document = get_object_or_404(Document, id=document_id)
         
+        # Store document info for confirmation message
+        document_title = document.title
+        is_payment_document = document.document_type == 'pagos_mantenimiento'
+        
         # Delete file from storage
         if document.file:
             if default_storage.exists(document.file.name):
                 default_storage.delete(document.file.name)
         
-        # Delete database record
+        # Delete database record (this will trigger the signal automatically)
         document.delete()
+        
+        # Prepare success message
+        success_message = 'Documento eliminado exitosamente.'
+        if is_payment_document:
+            success_message += ' Los pagos asociados también fueron eliminados de la base de datos.'
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
-                'message': 'Documento eliminado exitosamente.'
+                'message': success_message,
+                'is_payment_document': is_payment_document
             })
         
-        messages.success(request, 'Documento eliminado exitosamente.')
+        messages.success(request, success_message)
         return redirect('documentos')
         
     except Exception as e:
         logger.error(f"Error deleting document: {str(e)}")
+        
+        error_message = 'Error al eliminar el documento.'
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
-                'message': 'Error al eliminar el documento.'
+                'message': error_message
             })
-        messages.error(request, 'Error al eliminar el documento.')
+        
+        messages.error(request, error_message)
         return redirect('documentos')
 
 @login_required
@@ -593,20 +606,147 @@ def gastos(request):
 
 
 
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def panel(request):
     try:
+        # Date filtering logic - similar to dashboard
+        start_date = timezone.datetime(2025, 1, 1).date()
+        end_date = start_date + relativedelta(years=5, months=-1)
+        
+        selected_date = request.GET.get('date')
+        if selected_date:
+            selected_year, selected_month = map(int, selected_date.split('-'))
+            current_month = datetime(selected_year, selected_month, 1).date()
+        else:
+            current_month = timezone.now().date().replace(day=1)
+            selected_year, selected_month = current_month.year, current_month.month
+
+        # Generate date range for dropdown
+        date_range = []
+        current = start_date
+        while current <= end_date:
+            date_range.append((current.year, current.month))
+            current += relativedelta(months=1)
+
         # Get initial data
         apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
-        current_month = timezone.now().date().replace(day=1)
         announcements = Announcement.objects.all().order_by('-created_at')
 
         if request.method == 'POST':
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-            # Handle announcements
-            if 'create_announcement' in request.POST:
+            # Handle cleanup operations - NEW SECTION
+            if 'cleanup_action' in request.POST:
+                action = request.POST.get('cleanup_action')
+                exclude_superuser = request.POST.get('exclude_superuser') == 'on'
+                before_date = request.POST.get('before_date')
+                specific_user = request.POST.get('specific_user')
+                
+                try:
+                    # Parse before_date if provided
+                    before_date_obj = None
+                    if before_date:
+                        before_date_obj = datetime.strptime(before_date, '%Y-%m-%d').date()
+
+                    # Build query filters
+                    monthly_fees_query = MonthlyFees.objects.all()
+                    payment_reports_query = PaymentReport.objects.all()
+
+                    # Exclude superusers if requested
+                    if exclude_superuser:
+                        superuser_ids = CustomUser.objects.filter(is_superuser=True).values_list('id', flat=True)
+                        monthly_fees_query = monthly_fees_query.exclude(user_id__in=superuser_ids)
+                        payment_reports_query = payment_reports_query.exclude(user_id__in=superuser_ids)
+
+                    # Filter by specific user if provided
+                    if specific_user:
+                        try:
+                            user = CustomUser.objects.get(username=specific_user)
+                            monthly_fees_query = monthly_fees_query.filter(user=user)
+                            payment_reports_query = payment_reports_query.filter(user=user)
+                        except CustomUser.DoesNotExist:
+                            if is_ajax:
+                                return JsonResponse({'success': False, 'message': f'Usuario "{specific_user}" no encontrado'})
+                            messages.error(request, f'Usuario "{specific_user}" no encontrado')
+                            return redirect('panel')
+
+                    # Filter by date if provided
+                    if before_date_obj:
+                        monthly_fees_query = monthly_fees_query.filter(month__lt=before_date_obj)
+                        payment_reports_query = payment_reports_query.filter(month__lt=before_date_obj)
+
+                    # Get records to process
+                    monthly_fees_to_process = monthly_fees_query.filter(is_paid=True)
+                    payment_reports_to_process = payment_reports_query.all()
+
+                    if action == 'preview':
+                        # Return preview data
+                        preview_data = {
+                            'monthly_fees_count': monthly_fees_to_process.count(),
+                            'payment_reports_count': payment_reports_to_process.count(),
+                            'monthly_fees': [
+                                {
+                                    'username': fee.user.username,
+                                    'apartment': fee.user.apartment_number,
+                                    'month': fee.month.strftime('%B %Y'),
+                                    'paid_amount': str(fee.paid_amount)
+                                } for fee in monthly_fees_to_process[:10]  # First 10
+                            ],
+                            'payment_reports': [
+                                {
+                                    'username': report.user.username,
+                                    'month': report.month.strftime('%B %Y'),
+                                    'amount': str(report.amount_paid),
+                                    'date': report.payment_date.strftime('%d/%m/%Y')
+                                } for report in payment_reports_to_process[:10]  # First 10
+                            ]
+                        }
+                        
+                        if is_ajax:
+                            return JsonResponse({'success': True, 'preview': preview_data})
+                    
+                    elif action == 'reset':
+                        # Reset paid status and amounts
+                        with transaction.atomic():
+                            updated_fees = monthly_fees_to_process.update(
+                                is_paid=False,
+                                paid_amount=0
+                            )
+                            deleted_reports = payment_reports_to_process.count()
+                            payment_reports_to_process.delete()
+                            
+                            message = f'Se reiniciaron {updated_fees} cuotas mensuales y se eliminaron {deleted_reports} reportes de pago'
+                            if is_ajax:
+                                return JsonResponse({'success': True, 'message': message})
+                            messages.success(request, message)
+                    
+                    elif action == 'delete':
+                        # Delete records completely
+                        with transaction.atomic():
+                            deleted_fees = monthly_fees_to_process.count()
+                            deleted_reports = payment_reports_to_process.count()
+                            
+                            monthly_fees_to_process.delete()
+                            payment_reports_to_process.delete()
+                            
+                            message = f'Se eliminaron {deleted_fees} cuotas mensuales y {deleted_reports} reportes de pago'
+                            if is_ajax:
+                                return JsonResponse({'success': True, 'message': message})
+                            messages.success(request, message)
+
+                except Exception as e:
+                    logger.error(f"Error in cleanup operation: {str(e)}")
+                    error_message = f'Error durante la limpieza: {str(e)}'
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'message': error_message})
+                    messages.error(request, error_message)
+
+                return redirect('panel')
+
+            # Handle announcements (existing code)
+            elif 'create_announcement' in request.POST:
                 try:
                     title = request.POST.get('title')
                     content = request.POST.get('content')
@@ -670,7 +810,7 @@ def panel(request):
                     messages.error(request, 'Anuncio no encontrado.')
                     return redirect('panel')
 
-            # Handle apartment fees
+            # Handle apartment fees (existing code)
             else:
                 apartment_id = request.POST.get('apartment_id')
                 if apartment_id:
@@ -685,7 +825,7 @@ def panel(request):
                         fees.gas_fee = Decimal(request.POST.get('gas_fee', 0))
                         fees.maintenance_fee = Decimal(request.POST.get('maintenance_fee', 1200))
                         fees.parking_fee = Decimal(request.POST.get('parking_fee', 0))
-                        fees.extra_fee = Decimal(request.POST.get('extra_fee', 500))
+                        fees.extra_fee = Decimal(request.POST.get('extra_fee', 0))
                         fees.past_due = Decimal(request.POST.get('past_due', 0))
                         fees.is_paid = request.POST.get('is_paid') == 'on'
                         fees.paid_amount = Decimal(request.POST.get('paid_amount', 0))
@@ -712,15 +852,27 @@ def panel(request):
                             return JsonResponse({'success': False, 'errors': str(e)})
                         messages.error(request, f'Error al actualizar cuotas: {str(e)}')
 
-        # Ensure monthly fees exist for all apartments
+        # Ensure monthly fees exist for all apartments for the selected month
         for apartment in apartments:
             MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
+
+        # Calculate cleanup statistics for display
+        cleanup_stats = {
+            'total_monthly_fees': MonthlyFees.objects.filter(is_paid=True).count(),
+            'total_payment_reports': PaymentReport.objects.count(),
+            'superuser_count': CustomUser.objects.filter(is_superuser=True).count(),
+        }
 
         # Prepare context
         context = {
             'apartments': apartments,
             'current_month': current_month,
+            'selected_year': selected_year,
+            'selected_month': selected_month,
+            'date_range': date_range,
             'announcements': announcements,
+            'cleanup_stats': cleanup_stats,
+            'all_users': apartments,  # For cleanup user dropdown
         }
 
         return render(request, 'panel.html', context)
@@ -731,7 +883,6 @@ def panel(request):
             return JsonResponse({'success': False, 'errors': 'Error interno del servidor'})
         messages.error(request, 'Error interno del servidor')
         return redirect('panel')
-
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)

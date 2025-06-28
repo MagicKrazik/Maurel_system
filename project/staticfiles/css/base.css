@@ -4,10 +4,9 @@ body {
     background-color: black;
     margin: 0;
     padding: 0;
-    height: 100%; /* Changed from min-height: 100vh */
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent scrolling */
 }
 
 /* Enhanced container */
@@ -17,12 +16,7 @@ body {
     margin: 0 auto;
     padding: 0 0.75rem;
     box-sizing: border-box;
-    flex: 1;  /* Changed from flex: 1 0 auto */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Distribute space between elements */
-    height: calc(100vh - 100px); /* Subtract navbar and footer height */
-    overflow-y: auto; /* Allow scrolling within container if needed */
+    flex: 1 0 auto;
 }
 
 /* Optimized navbar */
@@ -34,7 +28,6 @@ body {
     right: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    height: 50px; /* Set explicit height */
 }
 
 .navbar-content {
@@ -103,10 +96,10 @@ body {
 }
 
 .navbar-menu a {
-    color: #e0e0e0;
+    color: white;
     text-decoration: none;
     padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    font-size: 2rem;
     transition: background-color 0.2s ease;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -123,10 +116,7 @@ body {
 footer {
     background-color: #1e1e1e;
     padding: 0.75rem 0;
-    height: 50px; /* Set explicit height */
-    position: fixed; /* Fix footer at bottom */
-    bottom: 0;
-    width: 100%;
+    margin-top: auto;
 }
 
 .footer-content {

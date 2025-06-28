@@ -5,6 +5,10 @@ from django.conf import settings
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
+## New codes
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
 
 
 def payment_report_path(instance, filename):
@@ -50,7 +54,7 @@ class MonthlyFees(models.Model):
     gas_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     maintenance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=1200)
     parking_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    extra_fee = models.DecimalField(max_digits=10, decimal_places=2, default=500)
+    extra_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     past_due = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_paid = models.BooleanField(default=False)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -149,6 +153,8 @@ class ComplaintSuggestion(models.Model):
 class Document(models.Model):
     DOCUMENT_TYPES = [
         ('mantenimiento', 'Mantenimiento y Cotizaciones'),
+        ('pagos_mantenimiento', 'Pagos de Mantenimiento'),  # ADD THIS LINE
+        ('gastos_pasivos', 'Gastos y Pasivos'),  # ADD THIS LINE IF NOT EXISTS
         ('minutas', 'Minutas'),
         ('reglamentos', 'Reglamentos'),
         ('reportes', 'Reportes'),
@@ -207,3 +213,90 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+    
+# Signal to handle payment document deletion
+@receiver(post_delete, sender=Document)
+def handle_payment_document_deletion(sender, instance, **kwargs):
+    """
+    When a payment document is deleted, also delete the associated PaymentReport
+    and update the MonthlyFees accordingly.
+    """
+    # Only process if this is a payment document
+    if instance.document_type == 'pagos_mantenimiento':
+        try:
+            # Extract information from the document title or filename
+            # Expected format: "Pago de Mantenimiento - username - Month Year"
+            # Or from filename: "username.MM.YYYY.pdf"
+            
+            username = None
+            payment_month = None
+            
+            # Try to extract from filename first
+            if instance.file and instance.file.name:
+                filename = os.path.basename(instance.file.name)
+                if '.pdf' in filename:
+                    parts = filename.replace('.pdf', '').split('.')
+                    if len(parts) >= 3:
+                        username = parts[0]
+                        try:
+                            month = int(parts[1])
+                            year = int(parts[2])
+                            payment_month = timezone.datetime(year, month, 1).date()
+                        except (ValueError, IndexError):
+                            pass
+            
+            # If extraction from filename failed, try from title
+            if not username or not payment_month:
+                if 'Pago de Mantenimiento' in instance.title:
+                    parts = instance.title.split(' - ')
+                    if len(parts) >= 2:
+                        username = parts[1].strip()
+                        # Use the document date as payment month
+                        payment_month = instance.date.replace(day=1)
+            
+            # If we have the necessary information, proceed with deletion
+            if username and payment_month:
+                try:
+                    user = CustomUser.objects.get(username=username)
+                    
+                    # Find and delete the PaymentReport
+                    payment_reports = PaymentReport.objects.filter(
+                        user=user,
+                        month=payment_month
+                    )
+                    
+                    for payment_report in payment_reports:
+                        # Get the amount that was paid
+                        amount_paid = payment_report.amount_paid
+                        
+                        # Update MonthlyFees - subtract the payment amount
+                        try:
+                            monthly_fee = MonthlyFees.objects.get(
+                                user=user,
+                                month=payment_month
+                            )
+                            monthly_fee.paid_amount -= amount_paid
+                            if monthly_fee.paid_amount < 0:
+                                monthly_fee.paid_amount = 0
+                            
+                            # Update payment status based on remaining amount
+                            monthly_fee.is_paid = monthly_fee.paid_amount >= monthly_fee.total_fee
+                            monthly_fee.save()
+                            
+                            print(f"Updated MonthlyFees for {username}: reduced paid_amount by ${amount_paid}")
+                            
+                        except MonthlyFees.DoesNotExist:
+                            print(f"MonthlyFees not found for {username} in {payment_month}")
+                        
+                        # Delete the PaymentReport
+                        payment_report.delete()
+                        print(f"Deleted PaymentReport for {username} - ${amount_paid}")
+                
+                except CustomUser.DoesNotExist:
+                    print(f"User {username} not found")
+                except Exception as e:
+                    print(f"Error processing payment deletion: {str(e)}")
+                    
+        except Exception as e:
+            print(f"Error in payment document deletion signal: {str(e)}")
+            # Don't raise the exception to avoid blocking the document deletion    

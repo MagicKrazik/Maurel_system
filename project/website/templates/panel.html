@@ -108,8 +108,37 @@
         {% endif %}
     </div>
     
-
-
+    <!-- Date Filter Section -->
+    <div class="date-filter-section">
+        <h2>Seleccionar Período</h2>
+        <div class="filter-controls">
+            <form id="date-filter-form" method="get">
+                <label for="date-select">Seleccionar mes y año:</label>
+                <select name="date" id="date-select">
+                    {% for year, month in date_range %}
+                    {% with month|stringformat:"02d" as month_string %}
+                    <option value="{{ year }}-{{ month_string }}" {% if year == selected_year and month == selected_month %}selected{% endif %}>
+                        {% if month_string == "01" %}Enero {{ year }}
+                        {% elif month_string == "02" %}Febrero {{ year }}
+                        {% elif month_string == "03" %}Marzo {{ year }}
+                        {% elif month_string == "04" %}Abril {{ year }}
+                        {% elif month_string == "05" %}Mayo {{ year }}
+                        {% elif month_string == "06" %}Junio {{ year }}
+                        {% elif month_string == "07" %}Julio {{ year }}
+                        {% elif month_string == "08" %}Agosto {{ year }}
+                        {% elif month_string == "09" %}Septiembre {{ year }}
+                        {% elif month_string == "10" %}Octubre {{ year }}
+                        {% elif month_string == "11" %}Noviembre {{ year }}
+                        {% elif month_string == "12" %}Diciembre {{ year }}
+                        {% endif %}
+                    </option>
+                    {% endwith %}
+                    {% endfor %}
+                </select>
+                <button type="submit">Filtrar</button>
+            </form>
+        </div>
+    </div>
 
     <div class="apartments-section">
         <h2>Estado de Pagos por Departamento - {{ current_month|date:"F Y" }}</h2>
@@ -136,7 +165,7 @@
                                 </div>
                                 <div class="fee-item">
                                     <label>Extra:</label>
-                                    <input type="number" name="extra_fee" value="{{ apartment.monthly_fees.last.extra_fee|default:500 }}" step="0.01" class="fee-input">
+                                    <input type="number" name="extra_fee" value="{{ apartment.monthly_fees.last.extra_fee|default:0 }}" step="0.01" class="fee-input">
                                 </div>
                                 <div class="fee-item">
                                     <label>Saldo pendiente:</label>
@@ -170,6 +199,89 @@
                     </div>
                 {% endif %}
             {% endfor %}
+        </div>
+    </div>
+
+    <!-- NEW: System Maintenance Section -->
+    <div class="maintenance-section">
+        <h2>Mantenimiento del Sistema</h2>
+        
+        <!-- Cleanup Statistics -->
+        <div class="maintenance-stats">
+            <div class="stat-card">
+                <span class="stat-label">Cuotas mensuales pagadas:</span>
+                <span class="stat-value">{{ cleanup_stats.total_monthly_fees }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Reportes de pago:</span>
+                <span class="stat-value">{{ cleanup_stats.total_payment_reports }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Cuentas de superusuario:</span>
+                <span class="stat-value">{{ cleanup_stats.superuser_count }}</span>
+            </div>
+        </div>
+
+        <!-- Cleanup Form -->
+        <div class="cleanup-form-container">
+            <h3>Limpiar Datos de Pagos</h3>
+            <form id="cleanup-form" method="post">
+                {% csrf_token %}
+                
+                <div class="cleanup-options">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="exclude_superuser" checked>
+                            Excluir cuentas de superusuario (recomendado)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="before_date">Eliminar registros anteriores a (opcional):</label>
+                        <input type="date" id="before_date" name="before_date" class="form-control">
+                        <small>Dejar vacío para procesar todos los registros</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specific_user">Usuario específico (opcional):</label>
+                        <select id="specific_user" name="specific_user" class="form-control">
+                            <option value="">Todos los usuarios</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.username }}">{{ user.username }} - Apto {{ user.apartment_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="cleanup-actions">
+                    <button type="button" id="preview-btn" class="btn btn-info">
+                        Previsualizar
+                    </button>
+                    <button type="button" id="reset-btn" class="btn btn-warning">
+                        Reiniciar Estado de Pago
+                    </button>
+                    <button type="button" id="delete-btn" class="btn btn-danger">
+                        Eliminar Registros
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Results -->
+        <div id="preview-results" class="preview-section" style="display: none;">
+            <h3>Previsualización de Limpieza</h3>
+            <div id="preview-content"></div>
+            <div class="preview-actions">
+                <button type="button" id="confirm-reset-btn" class="btn btn-warning">
+                    Confirmar Reinicio
+                </button>
+                <button type="button" id="confirm-delete-btn" class="btn btn-danger">
+                    Confirmar Eliminación
+                </button>
+                <button type="button" id="cancel-preview-btn" class="btn btn-secondary">
+                    Cancelar
+                </button>
+            </div>
         </div>
     </div>
 

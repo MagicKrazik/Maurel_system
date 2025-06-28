@@ -1,5 +1,272 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Announcements functionality
+    // Date filter functionality
+    const dateFilterForm = document.getElementById('date-filter-form');
+    const dateSelect = document.getElementById('date-select');
+    
+    if (dateFilterForm && dateSelect) {
+        dateSelect.addEventListener('change', function() {
+            dateFilterForm.submit();
+        });
+    }
+
+    // Cleanup functionality - NEW SECTION
+    const cleanupForm = document.getElementById('cleanup-form');
+    const previewBtn = document.getElementById('preview-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const deleteBtn = document.getElementById('delete-btn');
+    const previewResults = document.getElementById('preview-results');
+    const previewContent = document.getElementById('preview-content');
+    const confirmResetBtn = document.getElementById('confirm-reset-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelPreviewBtn = document.getElementById('cancel-preview-btn');
+
+    let currentPreviewData = null;
+
+    function showStatus(message, type = 'info') {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = `status-message status-${type}`;
+        statusDiv.textContent = message;
+        
+        // Remove any existing status messages
+        const existingStatus = document.querySelector('.status-message');
+        if (existingStatus) {
+            existingStatus.remove();
+        }
+        
+        // Insert status message
+        cleanupForm.insertAdjacentElement('afterend', statusDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (statusDiv.parentNode) {
+                statusDiv.remove();
+            }
+        }, 5000);
+    }
+
+    function getCleanupFormData() {
+        const formData = new FormData(cleanupForm);
+        formData.append('cleanup_action', 'preview'); // Default action
+        return formData;
+    }
+
+    function submitCleanupRequest(action) {
+        const formData = getCleanupFormData();
+        formData.set('cleanup_action', action);
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        return fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error:', error);
+            throw new Error('Error de conexión');
+        });
+    }
+
+    function displayPreviewResults(data) {
+        let html = '';
+        
+        if (data.monthly_fees_count > 0 || data.payment_reports_count > 0) {
+            html += `<div class="preview-summary">
+                Se procesarían: ${data.monthly_fees_count} cuotas mensuales y ${data.payment_reports_count} reportes de pago
+            </div>`;
+            
+            if (data.monthly_fees && data.monthly_fees.length > 0) {
+                html += '<h4>Cuotas Mensuales (primeras 10):</h4>';
+                data.monthly_fees.forEach(fee => {
+                    html += `<div class="preview-item">
+                        <strong>${fee.username}</strong> - Apto ${fee.apartment} - 
+                        ${fee.month} - Pagado: $${fee.paid_amount}
+                    </div>`;
+                });
+                if (data.monthly_fees_count > 10) {
+                    html += `<div class="preview-item">... y ${data.monthly_fees_count - 10} más</div>`;
+                }
+            }
+            
+            if (data.payment_reports && data.payment_reports.length > 0) {
+                html += '<h4>Reportes de Pago (primeros 10):</h4>';
+                data.payment_reports.forEach(report => {
+                    html += `<div class="preview-item">
+                        <strong>${report.username}</strong> - ${report.month} - 
+                        $${report.amount} - ${report.date}
+                    </div>`;
+                });
+                if (data.payment_reports_count > 10) {
+                    html += `<div class="preview-item">... y ${data.payment_reports_count - 10} más</div>`;
+                }
+            }
+        } else {
+            html = '<div class="preview-summary">No se encontraron registros para procesar con los filtros seleccionados.</div>';
+        }
+        
+        previewContent.innerHTML = html;
+        previewResults.style.display = 'block';
+        previewResults.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Preview button click handler
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            previewBtn.disabled = true;
+            previewBtn.innerHTML = '<span class="loading-spinner"></span> Cargando...';
+            
+            submitCleanupRequest('preview')
+                .then(data => {
+                    if (data.success) {
+                        currentPreviewData = data.preview;
+                        displayPreviewResults(data.preview);
+                    } else {
+                        showStatus(data.message || 'Error al generar previsualización', 'error');
+                    }
+                })
+                .catch(error => {
+                    showStatus('Error al procesar la solicitud: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    previewBtn.disabled = false;
+                    previewBtn.innerHTML = 'Previsualizar';
+                });
+        });
+    }
+
+    // Reset button click handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (confirm('¿Está seguro de que desea reiniciar el estado de pago? Esta acción cambiará el estado a "no pagado" pero mantendrá los registros.')) {
+                resetBtn.disabled = true;
+                resetBtn.innerHTML = '<span class="loading-spinner"></span> Procesando...';
+                
+                submitCleanupRequest('reset')
+                    .then(data => {
+                        if (data.success) {
+                            showStatus(data.message, 'success');
+                            // Reload page to update statistics
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            showStatus(data.message || 'Error al reiniciar los datos', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showStatus('Error al procesar la solicitud: ' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        resetBtn.disabled = false;
+                        resetBtn.innerHTML = 'Reiniciar Estado de Pago';
+                    });
+            }
+        });
+    }
+
+    // Delete button click handler
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('¿Está seguro de que desea eliminar permanentemente estos registros? Esta acción NO se puede deshacer.')) {
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<span class="loading-spinner"></span> Eliminando...';
+                
+                submitCleanupRequest('delete')
+                    .then(data => {
+                        if (data.success) {
+                            showStatus(data.message, 'success');
+                            // Reload page to update statistics
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            showStatus(data.message || 'Error al eliminar los datos', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showStatus('Error al procesar la solicitud: ' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = 'Eliminar Registros';
+                    });
+            }
+        });
+    }
+
+    // Confirm reset button (from preview)
+    if (confirmResetBtn) {
+        confirmResetBtn.addEventListener('click', function() {
+            if (confirm('¿Confirma que desea reiniciar el estado de pago de estos registros?')) {
+                confirmResetBtn.disabled = true;
+                confirmResetBtn.innerHTML = '<span class="loading-spinner"></span> Procesando...';
+                
+                submitCleanupRequest('reset')
+                    .then(data => {
+                        if (data.success) {
+                            showStatus(data.message, 'success');
+                            previewResults.style.display = 'none';
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            showStatus(data.message || 'Error al reiniciar los datos', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showStatus('Error al procesar la solicitud: ' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        confirmResetBtn.disabled = false;
+                        confirmResetBtn.innerHTML = 'Confirmar Reinicio';
+                    });
+            }
+        });
+    }
+
+    // Confirm delete button (from preview)
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (confirm('¿Confirma que desea eliminar permanentemente estos registros?')) {
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.innerHTML = '<span class="loading-spinner"></span> Eliminando...';
+                
+                submitCleanupRequest('delete')
+                    .then(data => {
+                        if (data.success) {
+                            showStatus(data.message, 'success');
+                            previewResults.style.display = 'none';
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            showStatus(data.message || 'Error al eliminar los datos', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showStatus('Error al procesar la solicitud: ' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        confirmDeleteBtn.disabled = false;
+                        confirmDeleteBtn.innerHTML = 'Confirmar Eliminación';
+                    });
+            }
+        });
+    }
+
+    // Cancel preview button
+    if (cancelPreviewBtn) {
+        cancelPreviewBtn.addEventListener('click', function() {
+            previewResults.style.display = 'none';
+            currentPreviewData = null;
+        });
+    }
+
+    // Announcements functionality (existing code)
     function handleAnnouncementSubmit(form, action) {
         const formData = new FormData(form);
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -95,12 +362,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Apartment fees functionality
-    const apartmentForms = document.querySelectorAll('.apartment-form');
+    const apartmentForms = document.querySelectorAll('.apartment-card form');
     apartmentForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch(this.action, {
+            
+            const currentDate = new URLSearchParams(window.location.search).get('date');
+            if (currentDate) {
+                formData.append('date', currentDate);
+            }
+            
+            fetch(this.action + (currentDate ? `?date=${currentDate}` : ''), {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -125,14 +398,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function updateApartmentCard(apartmentData) {
-        const card = document.querySelector(`#apartment-${apartmentData.id}`);
+        const card = document.querySelector(`[data-apartment-id="${apartmentData.id}"]`);
         if (card) {
-            card.querySelector('.total-value').textContent = `$${apartmentData.total_fee}`;
-            card.querySelector('.pending-value').textContent = `$${apartmentData.remaining_amount}`;
-            card.querySelector('.payment-status').innerHTML = apartmentData.is_paid ? 
-                '<span class="status-active">Pagado</span>' : 
-                '<span class="status-inactive">No pagado</span>';
-            card.querySelector('.is-debtor input').checked = apartmentData.is_debtor;
+            const totalValue = card.querySelector('.total-value');
+            const pendingValue = card.querySelector('.pending-value');
+            const paymentStatus = card.querySelector('.payment-status input[type="checkbox"]');
+            const debtorStatus = card.querySelector('.is-debtor input[type="checkbox"]');
+            
+            if (totalValue) totalValue.textContent = apartmentData.total_fee;
+            if (pendingValue) pendingValue.textContent = apartmentData.remaining_amount;
+            if (paymentStatus) paymentStatus.checked = apartmentData.is_paid;
+            if (debtorStatus) debtorStatus.checked = apartmentData.is_debtor;
         }
     }
 
@@ -183,6 +459,42 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('report-month').value = currentDate.getMonth() + 1;
         document.getElementById('report-year').value = currentDate.getFullYear();
     }
+
+    // Real-time calculation for apartment fees
+    document.querySelectorAll('.apartment-card').forEach(card => {
+        const feeInputs = card.querySelectorAll('.fee-input');
+        const totalValue = card.querySelector('.total-value');
+        const paidAmountInput = card.querySelector('.paid-amount-input');
+        const pendingValue = card.querySelector('.pending-value');
+
+        function updateTotals() {
+            let total = 0;
+            feeInputs.forEach(input => {
+                if (!input.classList.contains('paid-amount-input')) {
+                    total += parseFloat(input.value) || 0;
+                }
+            });
+            
+            if (totalValue) {
+                totalValue.textContent = total.toFixed(2);
+            }
+            
+            const paidAmount = parseFloat(paidAmountInput.value) || 0;
+            const pending = total - paidAmount;
+            
+            if (pendingValue) {
+                pendingValue.textContent = pending.toFixed(2);
+            }
+        }
+
+        feeInputs.forEach(input => {
+            input.addEventListener('input', updateTotals);
+        });
+        
+        if (paidAmountInput) {
+            paidAmountInput.addEventListener('input', updateTotals);
+        }
+    });
 
     // Responsive design
     function handleResize() {

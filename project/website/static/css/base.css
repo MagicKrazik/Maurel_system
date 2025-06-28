@@ -96,10 +96,10 @@ body {
 }
 
 .navbar-menu a {
-    color: #e0e0e0;
+    color: white;
     text-decoration: none;
     padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    font-size: 2rem;
     transition: background-color 0.2s ease;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }

@@ -99,7 +99,7 @@
         <h2>Ingresos</h2>
         <div class="filter-controls">
             <form id="income-filter-form" method="get">
-                <label for="income-date">Seleccionar mes y año:</label>
+                
                 <select name="date" id="income-date">
                     {% for year, month in date_range %}
                     {% with month|stringformat:"02d" as month_string %}
