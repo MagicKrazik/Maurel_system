@@ -39,7 +39,7 @@ class SpanishPasswordChangeForm(PasswordChangeForm):
     new_password1 = forms.CharField(
         label="Nueva contraseña",
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-        help_text="<ul><li>Su contraseña no puede ser muy similar a su otra información personal.</li><li>Su contraseña debe contener al menos 8 caracteres.</li><li>Su contraseña no puede ser una contraseña comúnmente utilizada.</li><li>Su contraseña no puede ser completamente numérica.</li></ul>",
+        help_text="<ul><li>Su contraseña debe contener al menos 8 caracteres.</li><li>Su contraseña no puede ser completamente numérica.</li></ul>",
     )
     new_password2 = forms.CharField(
         label="Confirmar nueva contraseña",
@@ -60,11 +60,11 @@ class PaymentUploadForm(forms.ModelForm):
             'proof_of_payment': 'Comprobante de pago',
         }
         help_texts = {
-            'amount_paid': 'Ingrese el monto pagado en pesos y centavos.',
-            'payment_date': 'Fecha en que realizó el pago.',
-            'payment_method': 'Seleccione el método de pago utilizado.',
-            'comments': 'Agregue cualquier comentario relevante (opcional).',
-            'proof_of_payment': 'Suba una imagen o PDF del comprobante de pago.',
+            'amount_paid': 'Ingrese el monto pagado en pesos',
+            'payment_date': 'Fecha de pago',
+            'payment_method': 'Método de pago utilizado.',
+            'comments': 'Comentario (opcional).',
+            'proof_of_payment': 'Imagen del comprobante de pago.',
         }
         widgets = {
             'payment_date': forms.DateInput(attrs={'type': 'date'}),
@@ -76,8 +76,8 @@ class ComplaintSuggestionForm(forms.ModelForm):
         model = ComplaintSuggestion
         fields = ['apartment_number', 'type', 'category', 'description', 'attachment']
         labels = {
-            'apartment_number': 'Número de Apartamento',
-            'type': 'Tipo',
+            'apartment_number': 'Número de Departamento',
+            'type': 'Tipo de reporte',
             'category': 'Categoría',
             'description': 'Descripción',
             'attachment': 'Adjunto (opcional)',

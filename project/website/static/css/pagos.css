@@ -130,8 +130,8 @@
 
 /* Helper text and errors */
 .small {
-    font-size: 0.85rem;
-    color: #888;
+    font-size: 0.95rem;
+    color: #1E90FF;
     margin-top: 0.5rem;
     display: block;
     line-height: 1.4;

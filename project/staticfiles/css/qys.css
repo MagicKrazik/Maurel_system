@@ -25,6 +25,13 @@ h2 {
     color: #4a90e2;
 }
 
+.help {
+  color: #888; /* A common, subtle gray for help text */
+  font-size: 0.85rem; /* Adjust font size if needed */
+  margin-top: 0.25rem; /* Add a little space above it */
+  font-style: italic; /* Make it italic for a distinct look */
+}
+
 /* Form sections */
 .qys-form-section,
 .all-submissions {
@@ -154,14 +161,28 @@ h2 {
     background-color: #2c2c2c;
     border-radius: 8px;
     padding: 0.5rem;
+    /* Optional: If you want the entire card centered on the screen */
+    /* margin-left: auto; */
+    /* margin-right: auto; */
+    /* max-width: 300px; /* Adjust as needed for card width */
 }
 
-.qys-table td {
-    position: relative;
-    padding: 0.75rem 0.75rem 0.75rem 50%;
+.qys-table td, th {
+    /* Remove position: relative if not explicitly needed for other absolute positioning inside td/th */
+    /* position: relative; */ /* Keep if you need it for data-label positioning */
+
+    /* Reset padding for the new centered layout */
+    padding: 0.5rem 0.75rem; /* Top/bottom 0.5rem, left/right 0.75rem */
+
     min-height: 1rem;
     border-bottom: 1px solid #333;
     color: white;
+
+    /* Center the text within the <td> itself */
+    text-align: center; /* This will center the actual value */
+
+    /* Ensure vertical alignment if content takes multiple lines */
+    vertical-align: middle;
 }
 
 .qys-table td:last-child {
@@ -169,15 +190,18 @@ h2 {
 }
 
 .qys-table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 0.75rem;
-    width: 45%;
-    padding-right: 0.5rem;
+    /* Modify how the label behaves */
+    display: block; /* Make the label a block element so the value drops below it */
+    position: static; /* Remove absolute positioning relative to the td */
+    width: 100%; /* Make the label take full width */
+    padding-right: 0; /* Remove specific padding for label */
+    margin-bottom: 0.2rem; /* Add some space between label and value */
     font-weight: 500;
     color: #4a90e2;
-}
 
+    /* Center the label text */
+    text-align: center; /* Center the data-label itself */
+}
 /* Status colors */
 .status-atendido { color: #4CAF50; }
 .status-en_progreso { color: #FFA500; }

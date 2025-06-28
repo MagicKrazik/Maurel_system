@@ -11,10 +11,10 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <h1>Dashboard de Control</h1>
+    <h1>Panel de Control</h1>
 
     <div class="announcements-section">
-        <h2>Anuncios</h2>
+        <h2>Comunicación</h2>
         {% if active_announcements %}
             <ul class="announcements-list">
                 {% for announcement in active_announcements %}
@@ -80,7 +80,7 @@
     {% endif %}
 
     <div class="debtors-section">
-        <h2>Deudores Actuales</h2>
+        <h2>Pagos pendientes</h2>
         {% if debtors %}
         <div class="debtors-list">
             {% for debtor in debtors %}
@@ -91,7 +91,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <p>No hay deudores en este momento.</p>
+        <p>No hay pagos pendientes en este momento.</p>
         {% endif %}
     </div>
 

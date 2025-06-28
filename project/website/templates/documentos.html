@@ -11,11 +11,11 @@
 {% block content %}
 
 <div class="documentos-container">
-    <h1>Biblioteca de Documentos</h1>
+    <h1>Documentos</h1>
 
     <div class="filter-controls">
         <form method="get">
-            <label for="date-filter">Filtrar por mes y año:</label>
+            <label for="date-filter">Seleccionar periodo:</label>
             <select id="date-filter" name="date">
                 {% for year, month in date_range %}
                     {% with month|stringformat:"02d" as month_string %}

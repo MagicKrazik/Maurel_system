@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="pagos-container">
-    <h1>Subir Comprobante de Pago</h1>
+    <h1>Registro de Pago</h1>
     <form method="post" enctype="multipart/form-data" id="payment-form">
         {% csrf_token %}
         {% for field in form %}

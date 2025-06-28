@@ -1,0 +1,664 @@
+/* =======================================================
+   ENHANCED ACCESSIBILITY CSS OVERLAY
+   Add this to a new file: static/css/enhanced.css
+   Include it after base.css in your templates
+   ======================================================= */
+
+/* Enhanced Navigation Menu - Larger and More Visible */
+.navbar-menu a {
+    font-size: 2.8rem !important;
+    font-weight: bold !important;
+    padding: 1.5rem 2rem !important;
+    margin: 0.5rem 0 !important;
+    background: linear-gradient(135deg, #2c2c2c, #1a1a1a) !important;
+    border: 3px solid #4a90e2 !important;
+    border-radius: 12px !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease !important;
+    text-align: center !important;
+    letter-spacing: 1px !important;
+}
+
+.navbar-menu a:active,
+.navbar-menu a:hover {
+    background: linear-gradient(135deg, #4a90e2, #32CD32) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+    color: #ffffff !important;
+}
+
+/* Special styling for login link */
+.navbar-menu a[href*="login"] {
+    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+    color: #000000 !important;
+    font-size: 3.2rem !important;
+    border: 4px solid #FF6347 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.navbar-menu a[href*="login"]:active,
+.navbar-menu a[href*="login"]:hover {
+    background: linear-gradient(135deg, #FFA500, #FF6347) !important;
+    color: #ffffff !important;
+}
+
+/* Enhanced Forms - Larger and More Readable */
+.form-group {
+    margin-bottom: 2rem !important;
+}
+
+.form-group label {
+    font-size: 1.6rem !important;
+    font-weight: bold !important;
+    color: #ffffff !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    letter-spacing: 0.5px !important;
+}
+
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    font-size: 1.8rem !important;
+    padding: 1.5rem !important;
+    border: 3px solid #4a90e2 !important;
+    border-radius: 12px !important;
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+}
+
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #32CD32 !important;
+    background-color: #1a1a1a !important;
+    box-shadow: 0 0 0 4px rgba(50, 205, 50, 0.3) !important;
+    outline: none !important;
+    transform: scale(1.02) !important;
+}
+
+/* Enhanced Buttons */
+.btn,
+button,
+input[type="submit"] {
+    font-size: 1.8rem !important;
+    font-weight: bold !important;
+    padding: 1.5rem 3rem !important;
+    border-radius: 15px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3) !important;
+    margin: 1rem 0.5rem !important;
+}
+
+.btn-primary,
+.update-btn,
+button[type="submit"] {
+    background: linear-gradient(135deg, #4a90e2, #32CD32) !important;
+    color: #ffffff !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+    color: #000000 !important;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff4444, #cc0000) !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    color: #ffffff !important;
+}
+
+.btn:hover,
+.btn:active,
+button:hover,
+button:active {
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Enhanced Cards and Containers */
+.apartment-card,
+.announcement-item,
+.debtor-card,
+.fee-item {
+    padding: 2rem !important;
+    margin-bottom: 2rem !important;
+    border: 3px solid #4a90e2 !important;
+    border-radius: 15px !important;
+    background: linear-gradient(135deg, #2a2a2a, #1e1e1e) !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Enhanced Typography */
+h1 {
+    font-size: 3rem !important;
+    font-weight: bold !important;
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+    margin-bottom: 2rem !important;
+    text-align: center !important;
+    letter-spacing: 1px !important;
+}
+
+h2 {
+    font-size: 2.4rem !important;
+    font-weight: bold !important;
+    color: #4a90e2 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    margin-bottom: 1.5rem !important;
+    letter-spacing: 0.5px !important;
+}
+
+h3 {
+    font-size: 2rem !important;
+    font-weight: bold !important;
+    color: #32CD32 !important;
+    margin-bottom: 1rem !important;
+}
+
+p, span, div {
+    font-size: 1.4rem !important;
+    line-height: 1.6 !important;
+    color: #ffffff !important;
+}
+
+/* Enhanced Tables */
+table {
+    font-size: 1.4rem !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 2rem 0 !important;
+}
+
+th, td {
+    padding: 1.5rem !important;
+    border: 2px solid #4a90e2 !important;
+    text-align: left !important;
+    font-weight: 500 !important;
+}
+
+th {
+    background: linear-gradient(135deg, #4a90e2, #32CD32) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    font-size: 1.6rem !important;
+}
+
+/* Enhanced Dashboard Cards */
+.current-fees,
+.debtors-section,
+.income-section,
+.expenses-section,
+.balance-section {
+    padding: 2.5rem !important;
+    margin-bottom: 2.5rem !important;
+    border: 3px solid #4a90e2 !important;
+    border-radius: 20px !important;
+    background: linear-gradient(135deg, #1e1e1e, #2a2a2a) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Enhanced Status Indicators */
+.status-active,
+.paid {
+    background-color: #32CD32 !important;
+    color: #000000 !important;
+    padding: 0.8rem 1.5rem !important;
+    border-radius: 25px !important;
+    font-weight: bold !important;
+    font-size: 1.4rem !important;
+}
+
+.status-inactive,
+.unpaid {
+    background-color: #ff4444 !important;
+    color: #ffffff !important;
+    padding: 0.8rem 1.5rem !important;
+    border-radius: 25px !important;
+    font-weight: bold !important;
+    font-size: 1.4rem !important;
+}
+
+/* Enhanced Checkboxes and Radio Buttons */
+input[type="checkbox"],
+input[type="radio"] {
+    width: 2rem !important;
+    height: 2rem !important;
+    margin-right: 1rem !important;
+    transform: scale(1.5) !important;
+}
+
+/* Enhanced File Inputs */
+input[type="file"] {
+    font-size: 1.4rem !important;
+    padding: 1rem !important;
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border: 3px solid #4a90e2 !important;
+    border-radius: 12px !important;
+}
+
+/* Enhanced Messages and Alerts */
+.alert,
+.messages {
+    font-size: 1.6rem !important;
+    padding: 2rem !important;
+    margin: 2rem 0 !important;
+    border-radius: 15px !important;
+    border: 3px solid !important;
+    font-weight: bold !important;
+}
+
+.alert-success {
+    background-color: rgba(50, 205, 50, 0.2) !important;
+    border-color: #32CD32 !important;
+    color: #32CD32 !important;
+}
+
+.alert-error {
+    background-color: rgba(255, 68, 68, 0.2) !important;
+    border-color: #ff4444 !important;
+    color: #ff4444 !important;
+}
+
+.alert-warning {
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    border-color: #FFD700 !important;
+    color: #FFD700 !important;
+}
+
+/* Enhanced Links */
+a {
+    color: #4a90e2 !important;
+    font-weight: bold !important;
+    text-decoration: underline !important;
+    font-size: 1.4rem !important;
+    transition: all 0.3s ease !important;
+}
+
+a:hover,
+a:active {
+    color: #32CD32 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Enhanced Loading and Hover States */
+.loading-spinner {
+    width: 3rem !important;
+    height: 3rem !important;
+    border-width: 4px !important;
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 840px) {
+    .navbar-menu a {
+        font-size: 2.4rem !important;
+        padding: 1.2rem 1.5rem !important;
+    }
+    
+    .navbar-menu a[href*="login"] {
+        font-size: 2.8rem !important;
+    }
+    
+    h1 {
+        font-size: 2.4rem !important;
+    }
+    
+    h2 {
+        font-size: 2rem !important;
+    }
+    
+    .form-control,
+    input,
+    select,
+    textarea {
+        font-size: 1.6rem !important;
+        padding: 1.2rem !important;
+    }
+    
+    .btn,
+    button {
+        font-size: 1.6rem !important;
+        padding: 1.2rem 2rem !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .navbar-menu a {
+        font-size: 2rem !important;
+        padding: 1rem !important;
+    }
+    
+    .navbar-menu a[href*="login"] {
+        font-size: 2.4rem !important;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    h2 {
+        font-size: 1.8rem !important;
+    }
+}
+
+/* Enhanced Focus Indicators for Accessibility */
+*:focus {
+    outline: 4px solid #32CD32 !important;
+    outline-offset: 2px !important;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    * {
+        border-width: 4px !important;
+    }
+    
+    .navbar-menu a,
+    .btn,
+    button {
+        border: 4px solid #ffffff !important;
+    }
+}
+
+/* =======================================================
+   ENHANCED FORMS CSS - Add to enhanced.css file
+   Specific improvements for form usability
+   ======================================================= */
+
+/* Enhanced Form Containers */
+.form-container,
+.payment-form,
+.profile-form,
+.login-form {
+    background: linear-gradient(135deg, #2a2a2a, #1e1e1e) !important;
+    padding: 3rem !important;
+    margin: 2rem auto !important;
+    border-radius: 20px !important;
+    border: 3px solid #4a90e2 !important;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5) !important;
+    max-width: 800px !important;
+}
+
+/* Enhanced Form Titles */
+.form-container h1,
+.form-container h2 {
+    text-align: center !important;
+    color: #ffffff !important;
+    font-size: 2.8rem !important;
+    margin-bottom: 2.5rem !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+    border-bottom: 3px solid #4a90e2 !important;
+    padding-bottom: 1rem !important;
+}
+
+/* Enhanced Input Groups */
+.input-group {
+    position: relative !important;
+    margin-bottom: 2.5rem !important;
+}
+
+.input-group label {
+    position: absolute !important;
+    top: -1.2rem !important;
+    left: 1rem !important;
+    background-color: #1e1e1e !important;
+    padding: 0 0.5rem !important;
+    color: #4a90e2 !important;
+    font-size: 1.4rem !important;
+    font-weight: bold !important;
+    z-index: 1 !important;
+}
+
+/* Enhanced Required Field Indicators */
+.required-field label::after {
+    content: " *" !important;
+    color: #ff4444 !important;
+    font-size: 1.6rem !important;
+    font-weight: bold !important;
+}
+
+/* Enhanced Help Text */
+.help-text,
+.form-help {
+    font-size: 1.2rem !important;
+    color: #cccccc !important;
+    margin-top: 0.5rem !important;
+    padding: 0.5rem !important;
+    background-color: rgba(74, 144, 226, 0.1) !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #4a90e2 !important;
+}
+
+/* Enhanced Error Messages */
+.error-message,
+.field-error {
+    background-color: rgba(255, 68, 68, 0.2) !important;
+    color: #ff4444 !important;
+    padding: 1rem !important;
+    border-radius: 10px !important;
+    border: 2px solid #ff4444 !important;
+    margin-top: 0.5rem !important;
+    font-size: 1.3rem !important;
+    font-weight: bold !important;
+}
+
+/* Enhanced Success Messages */
+.success-message {
+    background-color: rgba(50, 205, 50, 0.2) !important;
+    color: #32CD32 !important;
+    padding: 1.5rem !important;
+    border-radius: 15px !important;
+    border: 3px solid #32CD32 !important;
+    margin: 2rem 0 !important;
+    font-size: 1.6rem !important;
+    font-weight: bold !important;
+    text-align: center !important;
+}
+
+/* Enhanced File Upload Areas */
+.file-upload-area {
+    border: 3px dashed #4a90e2 !important;
+    border-radius: 15px !important;
+    padding: 3rem !important;
+    text-align: center !important;
+    background-color: rgba(74, 144, 226, 0.1) !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+.file-upload-area:hover {
+    background-color: rgba(74, 144, 226, 0.2) !important;
+    border-color: #32CD32 !important;
+}
+
+.file-upload-text {
+    font-size: 1.6rem !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Enhanced Select Dropdowns */
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 2rem !important;
+    padding-right: 4rem !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+/* Enhanced Progress Indicators */
+.form-progress {
+    background-color: #1e1e1e !important;
+    border-radius: 25px !important;
+    height: 1rem !important;
+    margin: 2rem 0 !important;
+    overflow: hidden !important;
+    border: 2px solid #4a90e2 !important;
+}
+
+.form-progress-bar {
+    background: linear-gradient(90deg, #4a90e2, #32CD32) !important;
+    height: 100% !important;
+    transition: width 0.3s ease !important;
+}
+
+/* Enhanced Multi-Step Forms */
+.form-step {
+    display: none !important;
+    animation: slideIn 0.3s ease-in-out !important;
+}
+
+.form-step.active {
+    display: block !important;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Enhanced Form Navigation */
+.form-navigation {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 3rem !important;
+    padding-top: 2rem !important;
+    border-top: 2px solid #4a90e2 !important;
+}
+
+.form-nav-btn {
+    min-width: 150px !important;
+    padding: 1.5rem 2.5rem !important;
+    font-size: 1.6rem !important;
+    font-weight: bold !important;
+    border-radius: 15px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-nav-prev {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    color: #ffffff !important;
+}
+
+.form-nav-next,
+.form-nav-submit {
+    background: linear-gradient(135deg, #4a90e2, #32CD32) !important;
+    color: #ffffff !important;
+}
+
+/* Enhanced Validation States */
+.field-valid {
+    border-color: #32CD32 !important;
+    box-shadow: 0 0 0 3px rgba(50, 205, 50, 0.3) !important;
+}
+
+.field-invalid {
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3) !important;
+}
+
+/* Enhanced Loading States */
+.form-loading {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.form-loading::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+    animation: loading 1.5s infinite !important;
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Enhanced Mobile Form Optimizations */
+@media (max-width: 840px) {
+    .form-container {
+        padding: 2rem !important;
+        margin: 1rem !important;
+        border-radius: 15px !important;
+    }
+    
+    .form-container h1,
+    .form-container h2 {
+        font-size: 2.2rem !important;
+    }
+    
+    .form-navigation {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .form-nav-btn {
+        width: 100% !important;
+    }
+    
+    .file-upload-area {
+        padding: 2rem !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .form-container {
+        padding: 1.5rem !important;
+        margin: 0.5rem !important;
+    }
+    
+    .form-container h1,
+    .form-container h2 {
+        font-size: 1.8rem !important;
+    }
+    
+    .input-group {
+        margin-bottom: 2rem !important;
+    }
+    
+    .form-control,
+    input,
+    select,
+    textarea {
+        font-size: 1.4rem !important;
+        padding: 1rem !important;
+    }
+}
