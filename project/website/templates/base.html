@@ -7,7 +7,6 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <!-- ADD THIS LINE: Enhanced accessibility CSS overlay -->
-    <link rel="stylesheet" href="{% static 'css/enhanced.css' %}">
     <link rel="icon" type="image/png" href="{% static 'images/building.png' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -24,17 +23,17 @@
 
             <div class="navbar-right navbar-menu">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}">📊 Inicio</a>
-                    <a href="{% url 'profile' %}">👤 Contraseña</a>
-                    <a href="{% url 'pagos' %}">💳 Pagos</a>
-                    <a href="{% url 'qys' %}">📋 Comunicación</a>
-                    <a href="{% url 'documentos' %}">📁 Documentos</a>
+                    <a href="{% url 'dashboard' %}">🏠 Inicio</a>
+                    <a href="{% url 'profile' %}">🔒 Contraseña</a>
+                    <a href="{% url 'pagos' %}">💰 Pagos</a>
+                    <a href="{% url 'qys' %}">📞 Comunicación</a>
+                    <a href="{% url 'documentos' %}">📂 Documentos</a>
                     {% if user.is_staff %}
-                        <a href="{% url 'panel' %}">⚙️ Admin</a>
+                        <a href="{% url 'panel' %}">🛠️ Admin</a>
                     {% endif %}
-                    <a href="{% url 'logout' %}">🚪 Salir</a>
+                    <a href="{% url 'logout' %}">👋 Salir</a>
                 {% else %}
-                    <a href="{% url 'login' %}">🔑 Entrar</a>
+                    <a href="{% url 'login' %}">🗝️ Entrar</a>
                 {% endif %}
             </div>
 

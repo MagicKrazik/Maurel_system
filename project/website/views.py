@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import CustomUser, MonthlyFees, Announcement
+from .models import CustomUser, MonthlyFees, Announcement, InitialBalance
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from .forms import UserProfileForm, SpanishPasswordChangeForm
@@ -56,6 +56,7 @@ from django.utils.html import strip_tags
 from django.urls import reverse
 
 from django.http import HttpResponse
+
 
 from calendar import month_name
 from io import BytesIO
@@ -149,23 +150,38 @@ def logout_view(request):
 
 
 
+# Enhanced dashboard view in views.py
+
+# REPLACE your dashboard view with this updated version:
 
 @login_required
 def dashboard(request):
     try:
-        start_date = timezone.datetime(2025, 1, 1).date()
+        # Start from June 2025
+        start_date = timezone.datetime(2025, 6, 1).date()
         end_date = start_date + relativedelta(years=5, months=-1)
         current_date = timezone.now().date()
 
-        selected_date = request.GET.get('date')
-        if selected_date:
-            selected_year, selected_month = map(int, selected_date.split('-'))
-            selected_date = datetime(selected_year, selected_month, 1).date()
+        # Get selected year and month
+        selected_year = request.GET.get('year')
+        selected_month = request.GET.get('month', 'all')
+        
+        if selected_year:
+            selected_year = int(selected_year)
         else:
-            selected_date = current_date
-            selected_year, selected_month = selected_date.year, selected_date.month
+            if current_date >= start_date:
+                selected_year = current_date.year
+            else:
+                selected_year = 2025
 
-        # Get active announcements first to ensure they exist
+        # Convert selected_month to int if it's not 'all'
+        if selected_month != 'all':
+            selected_month = int(selected_month)
+
+        # Calculate current month for limiting data display
+        current_month = current_date.month if current_date.year == selected_year else 12
+
+        # Get active announcements
         active_announcements = Announcement.objects.filter(
             is_active=True
         ).order_by('-created_at').select_related('created_by')
@@ -173,36 +189,138 @@ def dashboard(request):
         # Get debtors
         debtors = CustomUser.objects.filter(is_debtor=True)
         
-        # Calculate financial data
-        income_data = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
-        expenses_data = float(ExpenseReport.objects.filter(
-            expense_date__year=selected_year,
-            expense_date__month=selected_month
-        ).aggregate(Sum('amount'))['amount__sum'] or 0)
+        # Get initial balance (only applies to June 2025)
+        initial_balance = InitialBalance.get_initial_balance_for_period(start_date)
+        
+        # Calculate running balance up to the start of selected year
+        running_balance = Decimal('0.00')
+        
+        if selected_year == 2025:
+            running_balance = initial_balance
+        elif selected_year > 2025:
+            # Calculate all periods from June 2025 to end of previous year
+            temp_balance = initial_balance
+            
+            # Calculate 2025 from June to December
+            for month in range(6, 13):
+                month_income = float(MonthlyFees.get_total_paid_amount(2025, month))
+                month_expenses = float(ExpenseReport.objects.filter(
+                    expense_date__year=2025,
+                    expense_date__month=month
+                ).aggregate(Sum('amount'))['amount__sum'] or 0)
+                temp_balance += Decimal(str(month_income - month_expenses))
+            
+            # Calculate full years between 2026 and selected_year - 1
+            for year in range(2026, selected_year):
+                for month in range(1, 13):
+                    month_income = float(MonthlyFees.get_total_paid_amount(year, month))
+                    month_expenses = float(ExpenseReport.objects.filter(
+                        expense_date__year=year,
+                        expense_date__month=month
+                    ).aggregate(Sum('amount'))['amount__sum'] or 0)
+                    temp_balance += Decimal(str(month_income - month_expenses))
+            
+            running_balance = temp_balance
 
-        # Monthly balance
-        monthly_balance = income_data - expenses_data
-
-        # Yearly data
+        # Calculate data for the selected year
+        start_month = 6 if selected_year == 2025 else 1
+        end_month = 13
+        
         yearly_income_data = []
         yearly_expenses_data = []
-        for month in range(1, 13):
-            month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
-            month_expenses = float(ExpenseReport.objects.filter(
-                expense_date__year=selected_year,
-                expense_date__month=month
-            ).aggregate(Sum('amount'))['amount__sum'] or 0)
-            yearly_income_data.append(month_income)
-            yearly_expenses_data.append(month_expenses)
+        yearly_balance_data = []
+        yearly_labels = []
+        
+        # Initialize arrays based on year
+        if selected_year == 2025:
+            # For 2025, pad January-May with zeros
+            yearly_income_data = [0] * 5  # Jan-May
+            yearly_expenses_data = [0] * 5
+            yearly_balance_data = [0] * 5
+            yearly_labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May']
 
-        yearly_balance = sum(yearly_income_data) - sum(yearly_expenses_data)
+        # Calculate period-specific totals for cards
+        if selected_month == 'all':
+            # Calculate for entire year
+            period_income_total = 0
+            period_expenses_total = 0
+            
+            for month in range(start_month, end_month):
+                if selected_year > current_date.year or (selected_year == current_date.year and month <= current_month):
+                    month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
+                    month_expenses = float(ExpenseReport.objects.filter(
+                        expense_date__year=selected_year,
+                        expense_date__month=month
+                    ).aggregate(Sum('amount'))['amount__sum'] or 0)
+                else:
+                    month_income = 0
+                    month_expenses = 0
+                
+                period_income_total += month_income
+                period_expenses_total += month_expenses
+                
+                # Calculate net for this month
+                month_net = month_income - month_expenses
+                running_balance += Decimal(str(month_net))
+                
+                # Add month labels
+                month_names = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
+                              'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+                
+                yearly_income_data.append(month_income)
+                yearly_expenses_data.append(month_expenses)
+                yearly_balance_data.append(float(running_balance))
+                yearly_labels.append(month_names[month - 1])
+            
+            period_balance = float(running_balance)
+            
+        else:
+            # Calculate for specific month
+            if selected_year > current_date.year or (selected_year == current_date.year and selected_month <= current_month):
+                period_income_total = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
+                period_expenses_total = float(ExpenseReport.objects.filter(
+                    expense_date__year=selected_year,
+                    expense_date__month=selected_month
+                ).aggregate(Sum('amount'))['amount__sum'] or 0)
+            else:
+                period_income_total = 0
+                period_expenses_total = 0
+            
+            # For specific month, we still need to calculate cumulative balance up to that month
+            for month in range(start_month, selected_month + 1):
+                if selected_year > current_date.year or (selected_year == current_date.year and month <= current_month):
+                    month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
+                    month_expenses = float(ExpenseReport.objects.filter(
+                        expense_date__year=selected_year,
+                        expense_date__month=month
+                    ).aggregate(Sum('amount'))['amount__sum'] or 0)
+                else:
+                    month_income = 0
+                    month_expenses = 0
+                
+                month_net = month_income - month_expenses
+                running_balance += Decimal(str(month_net))
+                
+                # Add month labels and data
+                month_names = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
+                              'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+                
+                yearly_income_data.append(month_income)
+                yearly_expenses_data.append(month_expenses)
+                yearly_balance_data.append(float(running_balance))
+                yearly_labels.append(month_names[month - 1])
+            
+            period_balance = float(running_balance)
 
-        # Generate date range for dropdown
-        date_range = []
-        current = start_date
-        while current <= end_date:
-            date_range.append((current.year, current.month))
-            current += relativedelta(months=1)
+        yearly_balance = float(running_balance)
+
+        # Generate year range for dropdown
+        available_years = []
+        start_year = 2025
+        end_year = min(current_date.year + 1, start_year + 5)
+        
+        for year in range(start_year, end_year + 1):
+            available_years.append(year)
 
         # Base context depending on user type
         if request.user.is_staff or request.user.is_superuser:
@@ -223,16 +341,20 @@ def dashboard(request):
         context.update({
             'active_announcements': active_announcements,
             'debtors': debtors,
-            'income_data': income_data,
-            'expenses_data': expenses_data,
-            'monthly_balance': monthly_balance,
+            'initial_balance': float(initial_balance),
+            'period_income_total': period_income_total,
+            'period_expenses_total': period_expenses_total,
+            'period_balance': period_balance,
             'yearly_balance': yearly_balance,
             'yearly_income_data': json.dumps(yearly_income_data),
             'yearly_expenses_data': json.dumps(yearly_expenses_data),
+            'yearly_balance_data': json.dumps(yearly_balance_data),
+            'yearly_labels': json.dumps(yearly_labels),
             'selected_year': selected_year,
             'selected_month': selected_month,
-            'selected_date': selected_date,
-            'date_range': date_range,
+            'available_years': available_years,
+            'current_month': current_month if selected_year == current_date.year else 12,
+            'is_current_year': selected_year == current_date.year,
         })
 
         return render(request, 'dashboard.html', context)
@@ -241,7 +363,7 @@ def dashboard(request):
         logger.error(f"Error in dashboard view: {str(e)}")
         messages.error(request, "Error al cargar el dashboard. Por favor, inténtelo de nuevo.")
         return redirect('home')
-
+    
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -611,8 +733,8 @@ def gastos(request):
 @user_passes_test(lambda u: u.is_staff)
 def panel(request):
     try:
-        # Date filtering logic - similar to dashboard
-        start_date = timezone.datetime(2025, 1, 1).date()
+        # Date filtering logic - START FROM JUNE 2025
+        start_date = timezone.datetime(2025, 6, 1).date()
         end_date = start_date + relativedelta(years=5, months=-1)
         
         selected_date = request.GET.get('date')
@@ -620,17 +742,22 @@ def panel(request):
             selected_year, selected_month = map(int, selected_date.split('-'))
             current_month = datetime(selected_year, selected_month, 1).date()
         else:
-            current_month = timezone.now().date().replace(day=1)
+            # Default to current date or June 2025 if before that
+            current_date = timezone.now().date()
+            if current_date >= start_date:
+                current_month = current_date.replace(day=1)
+            else:
+                current_month = start_date
             selected_year, selected_month = current_month.year, current_month.month
 
-        # Generate date range for dropdown
+        # Generate date range for dropdown (starting from June 2025)
         date_range = []
         current = start_date
         while current <= end_date:
             date_range.append((current.year, current.month))
             current += relativedelta(months=1)
 
-        # Get initial data
+        # Rest of the existing panel logic remains the same...
         apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
         announcements = Announcement.objects.all().order_by('-created_at')
 
@@ -853,13 +980,19 @@ def panel(request):
                         messages.error(request, f'Error al actualizar cuotas: {str(e)}')
 
         # Ensure monthly fees exist for all apartments for the selected month
-        for apartment in apartments:
-            MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
+        if current_month >= start_date:
+            for apartment in apartments:
+                MonthlyFees.objects.get_or_create(user=apartment, month=current_month)
 
         # Calculate cleanup statistics for display
         cleanup_stats = {
-            'total_monthly_fees': MonthlyFees.objects.filter(is_paid=True).count(),
-            'total_payment_reports': PaymentReport.objects.count(),
+            'total_monthly_fees': MonthlyFees.objects.filter(
+                is_paid=True,
+                month__gte=start_date  # Only count from June 2025
+            ).count(),
+            'total_payment_reports': PaymentReport.objects.filter(
+                month__gte=start_date  # Only count from June 2025
+            ).count(),
             'superuser_count': CustomUser.objects.filter(is_superuser=True).count(),
         }
 
@@ -873,6 +1006,7 @@ def panel(request):
             'announcements': announcements,
             'cleanup_stats': cleanup_stats,
             'all_users': apartments,  # For cleanup user dropdown
+            'start_date': start_date,  # Pass start date to template if needed
         }
 
         return render(request, 'panel.html', context)
@@ -883,7 +1017,7 @@ def panel(request):
             return JsonResponse({'success': False, 'errors': 'Error interno del servidor'})
         messages.error(request, 'Error interno del servidor')
         return redirect('panel')
-
+        
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def generate_monthly_balance_report(request):

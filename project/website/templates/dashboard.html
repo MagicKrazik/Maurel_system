@@ -95,71 +95,135 @@
         {% endif %}
     </div>
 
-    <div class="income-section">
-        <h2>Ingresos</h2>
+    <div class="year-filter-section">
+        <h2>Filtros de Período</h2>
         <div class="filter-controls">
-            <form id="income-filter-form" method="get">
-                
-                <select name="date" id="income-date">
-                    {% for year, month in date_range %}
-                    {% with month|stringformat:"02d" as month_string %}
-                    <option value="{{ year }}-{{ month_string }}" {% if year == selected_year and month == selected_month %}selected{% endif %}>
-                        {% if month_string == "01" %}Enero {{ year }}
-                        {% elif month_string == "02" %}Febrero {{ year }}
-                        {% elif month_string == "03" %}Marzo {{ year }}
-                        {% elif month_string == "04" %}Abril {{ year }}
-                        {% elif month_string == "05" %}Mayo {{ year }}
-                        {% elif month_string == "06" %}Junio {{ year }}
-                        {% elif month_string == "07" %}Julio {{ year }}
-                        {% elif month_string == "08" %}Agosto {{ year }}
-                        {% elif month_string == "09" %}Septiembre {{ year }}
-                        {% elif month_string == "10" %}Octubre {{ year }}
-                        {% elif month_string == "11" %}Noviembre {{ year }}
-                        {% elif month_string == "12" %}Diciembre {{ year }}
-                        {% endif %}
+            <form id="period-filter-form" method="get">
+                <label for="year-select">Año:</label>
+                <select name="year" id="year-select">
+                    {% for year in available_years %}
+                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                        {{ year }}
                     </option>
-                    {% endwith %}
                     {% endfor %}
                 </select>
-                <button type="submit">Filtrar</button>
+                
+                <label for="month-select">Mes:</label>
+                <select name="month" id="month-select">
+                    <option value="all" {% if selected_month == 'all' %}selected{% endif %}>Todo el Año</option>
+                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>Enero</option>
+                    <option value="2" {% if selected_month == 2 %}selected{% endif %}>Febrero</option>
+                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>Marzo</option>
+                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>Mayo</option>
+                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>Junio</option>
+                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>Julio</option>
+                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>Septiembre</option>
+                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>Octubre</option>
+                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>Diciembre</option>
+                </select>
+                
+                <button type="submit">Aplicar Filtro</button>
             </form>
         </div>
-        <div class="income-graph">
-            <canvas id="incomeChart"></canvas>
+        <p class="selected-period-note">
+            {% if selected_month == 'all' %}
+            Mostrando datos de todo el año {{ selected_year }}
+            {% else %}
+            Mostrando datos de {{ selected_month|date:"F" }} {{ selected_year }}
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Update the financial overview cards to show period-specific data: -->
+    <div class="financial-overview">
+        <div class="overview-card income-card">
+            <h3>
+                {% if selected_month == 'all' %}
+                Ingresos {{ selected_year }}
+                {% else %}
+                Ingresos {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h3>
+            <div class="amount">${{ period_income_total|floatformat:2 }}</div>
         </div>
-        <div class="income-summary">
-            Total de ingresos para {{ selected_date|date:"F Y" }}: ${{ income_data }}
+        <div class="overview-card expenses-card">
+            <h3>
+                {% if selected_month == 'all' %}
+                Gastos {{ selected_year }}
+                {% else %}
+                Gastos {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h3>
+            <div class="amount">${{ period_expenses_total|floatformat:2 }}</div>
+        </div>
+        <div class="overview-card balance-card">
+            <h3>
+                {% if selected_month == 'all' %}
+                Balance {{ selected_year }}
+                {% else %}
+                Balance {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h3>
+            <div class="amount {% if period_balance >= 0 %}positive{% else %}negative{% endif %}">
+                ${{ period_balance|floatformat:2 }}
+            </div>
         </div>
     </div>
 
-    <div class="expenses-section">
-        <h2>Gastos</h2>
-        <div class="expenses-graph">
-            <canvas id="expensesChart"></canvas>
+    <!-- Update the charts section titles: -->
+    <div class="charts-container">
+        <div class="chart-section income-section">
+            <h2>
+                {% if selected_month == 'all' %}
+                Ingresos por Mes - {{ selected_year }}
+                {% else %}
+                Ingresos {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h2>
+            <div class="chart-wrapper">
+                <canvas id="incomeChart"></canvas>
+            </div>
         </div>
-        <div class="expenses-summary">
-            Total de gastos para {{ selected_date|date:"F Y" }}: ${{ expenses_data }}
+
+        <div class="chart-section expenses-section">
+            <h2>
+                {% if selected_month == 'all' %}
+                Gastos por Mes - {{ selected_year }}
+                {% else %}
+                Gastos {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h2>
+            <div class="chart-wrapper">
+                <canvas id="expensesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section balance-section">
+            <h2>
+                {% if selected_month == 'all' %}
+                Balance Acumulado - {{ selected_year }}
+                {% else %}
+                Balance Acumulado hasta {{ selected_month|date:"F" }} {{ selected_year }}
+                {% endif %}
+            </h2>
+            <div class="chart-wrapper">
+                <canvas id="balanceChart"></canvas>
+            </div>
+            <div class="balance-info">
+                <p class="balance-note">
+                    {% if selected_year == 2025 %}
+                    El balance incluye el saldo inicial aplicado en Junio 2025.
+                    {% else %}
+                    El balance acumulado incluye el arrastre de años anteriores.
+                    {% endif %}
+                </p>
+            </div>
         </div>
     </div>
-    <div class="balance-section">
-        <h2>Balance</h2>
-        <div class="balance-graph">
-            <canvas id="balanceChart"></canvas>
-        </div>
-        <div class="balance-summary">
-            Balance para {{ selected_date|date:"F Y" }}: 
-            <span class="{% if monthly_balance >= 0 %}positive{% else %}negative{% endif %}">
-                ${{ monthly_balance|floatformat:2 }}
-            </span>
-        </div>
-        <div class="balance-summary-year">
-            Balance acumulado {{ selected_year }}: 
-            <span class="{% if yearly_balance >= 0 %}positive{% else %}negative{% endif %}">
-                ${{ yearly_balance|floatformat:2 }}
-            </span>
-        </div>
-    </div>
-</div>
+</div>    
 {% endblock %}
 
 
@@ -168,7 +232,12 @@
 <script>
 var yearlyIncomeData = {{ yearly_income_data|safe }};
 var yearlyExpensesData = {{ yearly_expenses_data|safe }};
-var selectedDate = "{{ selected_date|date:'F Y' }}";
+var yearlyBalanceData = {{ yearly_balance_data|safe }};
+var yearlyLabels = {{ yearly_labels|safe }};
+var selectedYear = {{ selected_year }};
+var selectedMonth = "{{ selected_month }}";
+var currentMonth = {{ current_month }};
+var isCurrentYear = {{ is_current_year|yesno:"true,false" }};
 </script>
 <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

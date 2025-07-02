@@ -164,99 +164,220 @@ p {
     text-align: right;
 }
 
-/* Optimized filter controls */
-.filter-controls {
-    margin-bottom: 1rem;
-}
-
-.filter-controls form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-controls label {
-    color: #ffffff;
-    font-size: 0.9rem;
-}
-
-.filter-controls select,
-.filter-controls button {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #2a2a2a;
-    color: #ffffff;
-    font-size: 0.9rem;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.filter-controls select {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.7rem center;
-    background-size: 1em;
-    padding-right: 2.5rem;
-}
-
-.filter-controls button {
-    background-color: #4a90e2;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-}
-
-.filter-controls button:active {
-    background-color: #3a80d2;
-}
-
-/* Enhanced graphs sections */
-.income-section,
-.expenses-section,
-.balance-section {
+/* Month/Year Filter Section */
+.year-filter-section {
     background-color: #1e1e1e;
     border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1.25rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
-.income-graph,
-.expenses-graph,
-.balance-graph {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 0.75rem;
+.year-filter-section h2 {
+    color: #4a90e2;
     margin-bottom: 1rem;
-    height: 250px;
+    font-size: 1.3rem;
 }
 
-.income-summary,
-.expenses-summary,
-.balance-summary,
-.balance-summary-year {
+.filter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-controls form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.filter-controls label {
     color: #ffffff;
     font-size: 0.9rem;
     font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.filter-controls select,
+.filter-controls button {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    font-size: 0.9rem;
+    min-width: 120px;
+}
+
+.filter-controls select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 0.8em;
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.filter-controls button {
+    background-color: #4a90e2;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: none;
+}
+
+.filter-controls button:hover {
+    background-color: #3a80d2;
+}
+
+.selected-period-note {
+    color: #888;
+    font-size: 0.85rem;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Financial Overview Cards */
+.financial-overview {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.overview-card {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1.25rem;
     text-align: center;
-    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
 }
 
-.balance-summary-year {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #3a3a3a;
+.overview-card:hover {
+    transform: translateY(-2px);
 }
 
-.balance-summary span,
-.balance-summary-year span {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    margin-left: 0.25rem;
+.overview-card h3 {
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
 }
 
+.overview-card .amount {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1;
+}
+
+.income-card {
+    border-left-color: #4CAF50;
+}
+
+.income-card .amount {
+    color: #4CAF50;
+}
+
+.expenses-card {
+    border-left-color: #f44336;
+}
+
+.expenses-card .amount {
+    color: #f44336;
+}
+
+.balance-card {
+    border-left-color: #4a90e2;
+}
+
+.balance-card .amount.positive {
+    color: #4CAF50;
+}
+
+.balance-card .amount.negative {
+    color: #f44336;
+}
+
+/* Charts Container - ALIGNED WITH CARDS */
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    /* Remove any extra margins or padding that could cause misalignment */
+    margin: 0;
+    padding: 0;
+}
+
+.chart-section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Ensure proper box sizing */
+    box-sizing: border-box;
+    /* Prevent overflow */
+    overflow: hidden;
+    /* Remove any width overrides */
+    width: 100%;
+    max-width: 100%;
+}
+
+.chart-section h2 {
+    color: #4a90e2;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.chart-wrapper {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 0.75rem;
+    height: 280px;
+    position: relative;
+    margin-bottom: 1rem;
+    /* Ensure proper sizing and prevent overflow */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+    /* Prevent canvas from extending beyond container */
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+.balance-info {
+    text-align: center;
+}
+
+.balance-note {
+    color: #888;
+    font-size: 0.8rem;
+    margin: 0;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+/* Positive and Negative styling */
 .positive {
     color: #4CAF50;
     background-color: rgba(76, 175, 80, 0.1);
@@ -267,7 +388,60 @@ p {
     background-color: rgba(244, 67, 54, 0.1);
 }
 
+/* Chart Loading State */
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Chart Animation */
+.chart-section {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.chart-section:nth-child(1) { animation-delay: 0.1s; }
+.chart-section:nth-child(2) { animation-delay: 0.2s; }
+.chart-section:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Tablet breakpoint */
+@media (min-width: 576px) {
+    .financial-overview {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .overview-card h3 {
+        font-size: 0.95rem;
+    }
+    
+    .overview-card .amount {
+        font-size: 1.8rem;
+    }
+
+    .filter-controls form {
+        flex-wrap: nowrap;
+        gap: 1rem;
+    }
+
+    /* Ensure charts align with the 3-column card layout */
+    .charts-container {
+        /* Align charts with the card container */
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (min-width: 768px) {
     .dashboard-container {
         padding: 1.25rem;
@@ -303,30 +477,43 @@ p {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
 
-    .filter-controls form {
-        flex-direction: row;
-        align-items: flex-end;
+    .year-filter-section {
+        padding: 1.5rem;
+    }
+    
+    .year-filter-section h2 {
+        font-size: 1.5rem;
+    }
+    
+    .filter-controls {
+        margin-bottom: 1rem;
+        flex-wrap: nowrap;
+    }
+    
+    .overview-card {
+        padding: 1.5rem;
+    }
+    
+    .overview-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .overview-card .amount {
+        font-size: 2rem;
     }
 
-    .filter-controls select {
-        flex: 2;
+    .chart-section h2 {
+        font-size: 1.4rem;
+    }
+    
+    .chart-wrapper {
+        height: 350px;
+        padding: 1rem;
     }
 
-    .filter-controls button {
-        flex: 1;
-    }
-
-    .income-graph,
-    .expenses-graph,
-    .balance-graph {
-        height: 300px;
-    }
-
-    .income-summary,
-    .expenses-summary,
-    .balance-summary,
-    .balance-summary-year {
-        font-size: 1rem;
+    /* Keep charts aligned with card grid */
+    .charts-container {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -360,17 +547,33 @@ p {
         background-color: #3a80d2;
     }
 
-    .income-summary,
-    .expenses-summary,
-    .balance-summary,
-    .balance-summary-year {
-        font-size: 1.1rem;
+    .filter-controls select,
+    .filter-controls button {
+        min-width: 140px;
+    }
+    
+    .overview-card .amount {
+        font-size: 2.2rem;
     }
 
-    .income-graph,
-    .expenses-graph,
-    .balance-graph {
-        height: 350px;
+    .chart-section {
+        padding: 1.5rem;
+    }
+
+    .chart-section h2 {
+        font-size: 1.5rem;
+    }
+    
+    .chart-wrapper {
+        height: 400px;
+        padding: 1.25rem;
+    }
+
+    /* Maintain single column for charts on desktop for proper alignment */
+    .charts-container {
+        grid-template-columns: 1fr;
+        /* Ensure charts don't extend beyond the container */
+        max-width: 100%;
     }
 }
 
@@ -383,4 +586,78 @@ p {
     .announcements-list {
         grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     }
+
+    .chart-wrapper {
+        height: 450px;
+    }
+
+    /* Ensure proper alignment on very large screens */
+    .charts-container {
+        max-width: 100%;
+    }
+}
+
+/* Initial Balance Section - KEEPING FOR COMPATIBILITY */
+.initial-balance-section {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.initial-balance-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #4a90e2;
+}
+
+.balance-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.balance-label {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.balance-value {
+    color: #4a90e2;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.balance-breakdown {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.breakdown-item span:first-child {
+    color: #ffffff;
+}
+
+.breakdown-item span:last-child {
+    font-weight: 500;
+}
+
+.breakdown-divider {
+    height: 1px;
+    background-color: #4a4a4a;
+    margin: 0.5rem 0;
 }

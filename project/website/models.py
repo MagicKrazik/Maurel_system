@@ -4,11 +4,12 @@ import os
 from django.conf import settings
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractUser, Group, Permission
+import datetime
 
 ## New codes
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
-
+from decimal import Decimal
 
 
 def payment_report_path(instance, filename):
@@ -300,3 +301,73 @@ def handle_payment_document_deletion(sender, instance, **kwargs):
         except Exception as e:
             print(f"Error in payment document deletion signal: {str(e)}")
             # Don't raise the exception to avoid blocking the document deletion    
+
+
+class InitialBalance(models.Model):
+    amount = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        default=0,
+        verbose_name="Saldo Inicial"
+    )
+    description = models.CharField(
+        max_length=255, 
+        default="Saldo inicial del edificio",
+        verbose_name="Descripción"
+    )
+    effective_date = models.DateField(
+        default=datetime.date(2025, 6, 1),  # Use datetime.date instead of timezone.datetime().date()
+        verbose_name="Fecha Efectiva",
+        help_text="Fecha desde la cual aplica este saldo inicial"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        verbose_name="Creado por"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+
+    class Meta:
+        verbose_name = "Saldo Inicial"
+        verbose_name_plural = "Saldos Iniciales"
+        ordering = ['-effective_date', '-updated_at']
+
+    def __str__(self):
+        return f"Saldo Inicial: ${self.amount} - {self.effective_date.strftime('%m/%Y')}"
+
+    @classmethod
+    def get_initial_balance_for_period(cls, target_date):
+        """Get the initial balance that applies to a specific period"""
+        try:
+            # Find the most recent initial balance before or equal to target_date
+            return cls.objects.filter(
+                is_active=True,
+                effective_date__lte=target_date
+            ).latest('effective_date').amount
+        except cls.DoesNotExist:
+            return Decimal('0.00')
+
+    @classmethod
+    def get_current_balance(cls):
+        """Get the current active initial balance"""
+        try:
+            return cls.objects.filter(is_active=True).latest('effective_date').amount
+        except cls.DoesNotExist:
+            return Decimal('0.00')
+
+    def save(self, *args, **kwargs):
+        # Ensure only one active initial balance exists per effective_date
+        if self.is_active:
+            cls = self.__class__
+            existing = cls.objects.filter(
+                is_active=True,
+                effective_date=self.effective_date
+            ).exclude(pk=self.pk)
+            existing.update(is_active=False)
+        super().save(*args, **kwargs)
