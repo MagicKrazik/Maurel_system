@@ -215,14 +215,14 @@ class Announcement(models.Model):
     def __str__(self):
         return self.title
     
-# Signal to handle payment document deletion
+# Signal to handle payment and expense document deletion
 @receiver(post_delete, sender=Document)
-def handle_payment_document_deletion(sender, instance, **kwargs):
+def handle_document_deletion(sender, instance, **kwargs):
     """
-    When a payment document is deleted, also delete the associated PaymentReport
-    and update the MonthlyFees accordingly.
+    When a document is deleted, also delete the associated records
+    and update the related models accordingly.
     """
-    # Only process if this is a payment document
+    # Handle payment document deletion (existing functionality)
     if instance.document_type == 'pagos_mantenimiento':
         try:
             # Extract information from the document title or filename
@@ -300,7 +300,95 @@ def handle_payment_document_deletion(sender, instance, **kwargs):
                     
         except Exception as e:
             print(f"Error in payment document deletion signal: {str(e)}")
-            # Don't raise the exception to avoid blocking the document deletion    
+            # Don't raise the exception to avoid blocking the document deletion
+    
+    # Handle expense document deletion (NEW FUNCTIONALITY)
+    elif instance.document_type == 'gastos_pasivos':
+        try:
+            # Extract information from the document title or filename
+            # Expected format from gastos view: "expense_concept.MM.YYYY.pdf"
+            # Or from title: "expense_concept - MM/YYYY"
+            
+            expense_concept = None
+            expense_month = None
+            expense_year = None
+            
+            # Try to extract from filename first
+            if instance.file and instance.file.name:
+                filename = os.path.basename(instance.file.name)
+                if '.pdf' in filename:
+                    # Remove .pdf extension
+                    name_without_ext = filename.replace('.pdf', '')
+                    parts = name_without_ext.split('.')
+                    
+                    # Expected format: "concept.MM.YYYY" or "concept_with_underscores.MM.YYYY"
+                    if len(parts) >= 3:
+                        try:
+                            # Last two parts should be month and year
+                            expense_month = int(parts[-2])
+                            expense_year = int(parts[-1])
+                            # Everything before the last two parts is the concept
+                            expense_concept = '.'.join(parts[:-2])
+                        except (ValueError, IndexError):
+                            pass
+            
+            # If extraction from filename failed, try from title and document date
+            if not expense_concept or not expense_month or not expense_year:
+                # Use document date for month/year
+                expense_month = instance.date.month
+                expense_year = instance.date.year
+                
+                # Extract concept from title
+                # Title format: "expense_concept - MM/YYYY"
+                if ' - ' in instance.title:
+                    expense_concept = instance.title.split(' - ')[0]
+                else:
+                    expense_concept = instance.title
+            
+            # If we have the necessary information, proceed with deletion
+            if expense_concept and expense_month and expense_year:
+                try:
+                    # Create date object for the expense month
+                    expense_date = timezone.datetime(expense_year, expense_month, 1).date()
+                    
+                    # Find ExpenseReport records that match
+                    # We'll match by concept, month, and year since we don't have user info
+                    expense_reports = ExpenseReport.objects.filter(
+                        expense_concept__icontains=expense_concept,
+                        expense_date__year=expense_year,
+                        expense_date__month=expense_month
+                    )
+                    
+                    # If no exact match found, try to find by date only
+                    if not expense_reports.exists():
+                        expense_reports = ExpenseReport.objects.filter(
+                            expense_date__year=expense_year,
+                            expense_date__month=expense_month
+                        )
+                    
+                    deleted_count = 0
+                    total_amount = Decimal('0.00')
+                    
+                    for expense_report in expense_reports:
+                        total_amount += expense_report.amount
+                        expense_report.delete()
+                        deleted_count += 1
+                    
+                    if deleted_count > 0:
+                        print(f"Deleted {deleted_count} ExpenseReport record(s) for concept '{expense_concept}' "
+                              f"({expense_month}/{expense_year}) - Total amount: ${total_amount}")
+                    else:
+                        print(f"No ExpenseReport records found for concept '{expense_concept}' "
+                              f"({expense_month}/{expense_year})")
+                
+                except Exception as e:
+                    print(f"Error processing expense deletion: {str(e)}")
+            else:
+                print(f"Could not extract expense information from document: {instance.title}")
+                    
+        except Exception as e:
+            print(f"Error in expense document deletion signal: {str(e)}")
+            # Don't raise the exception to avoid blocking the document deletion
 
 
 class InitialBalance(models.Model):

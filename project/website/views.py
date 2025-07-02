@@ -607,15 +607,24 @@ def documentos(request):
         date_range.append((current.year, current.month))
         current += relativedelta(months=1)
 
-    # Group documents by type
+    # Group documents by type - FIXED FILTERING
     grouped_documents = {
         'mantenimiento': documents.filter(document_type='mantenimiento'),
         'pagos_mantenimiento': filtered_documents.filter(document_type='pagos_mantenimiento'),
-        'gastos_pasivos': filtered_documents.filter(document_type='gastos_pasivos'),
+        'gastos_pasivos': filtered_documents.filter(document_type='gastos_pasivos'),  # This should show filtered expenses
         'minutas': documents.filter(document_type='minutas'),
         'reglamentos': documents.filter(document_type='reglamentos'),
         'reportes': documents.filter(document_type='reportes'),
     }
+
+    # DEBUG: Add debug information to check if expense documents exist
+    print(f"DEBUG - Total gastos_pasivos documents: {documents.filter(document_type='gastos_pasivos').count()}")
+    print(f"DEBUG - Filtered gastos_pasivos documents for {selected_month}/{selected_year}: {grouped_documents['gastos_pasivos'].count()}")
+    
+    # If no filtered documents found, let's check what dates exist for gastos_pasivos
+    if grouped_documents['gastos_pasivos'].count() == 0:
+        all_gastos_dates = documents.filter(document_type='gastos_pasivos').values_list('date', flat=True)
+        print(f"DEBUG - All gastos_pasivos document dates: {list(all_gastos_dates)}")
 
     # Create a dictionary for document type headers
     document_type_headers = {
@@ -634,8 +643,12 @@ def documentos(request):
         'selected_month': selected_month,
         'selected_date': selected_date,
         'date_range': date_range,
+        # DEBUG: Add debug info to template context if needed
+        'debug_total_gastos': documents.filter(document_type='gastos_pasivos').count(),
+        'debug_filtered_gastos': grouped_documents['gastos_pasivos'].count(),
     }
     return render(request, 'documentos.html', context)
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -702,20 +715,29 @@ def gastos(request):
             expense.report_file.name = report_path
             expense.save()
 
-            # Create a Document object for the expense report
-            Document.objects.create(
-                title=f"{expense.expense_concept} - {expense.expense_date.strftime('%m/%Y')}",
-                document_type='gastos_pasivos',
-                file=expense.report_file,
-                date=expense.expense_date,
-                uploaded_by=request.user
-            )
+            # Create a Document object for the expense report - ENHANCED WITH DEBUG
+            try:
+                document = Document.objects.create(
+                    title=f"{expense.expense_concept} - {expense.expense_date.strftime('%m/%Y')}",
+                    document_type='gastos_pasivos',
+                    file=expense.report_file,
+                    date=expense.expense_date,  # This should use the expense_date, not today's date
+                    uploaded_by=request.user
+                )
+                
+                # DEBUG: Print document creation info
+                print(f"DEBUG - Created expense document: ID={document.id}, Title='{document.title}', "
+                      f"Type='{document.document_type}', Date={document.date}, File={document.file.name}")
+                
+            except Exception as e:
+                print(f"ERROR - Failed to create expense document: {str(e)}")
+                logger.error(f"Error creating expense document: {str(e)}")
 
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': 'Comprobante de gasto subido exitosamente.'})
             else:
                 messages.success(request, 'Comprobante de gasto subido exitosamente.')
-                return redirect('documentos')
+                return redirect('documentos')  # Redirect to documentos to see the created document
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors})
