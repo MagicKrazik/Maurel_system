@@ -10,28 +10,123 @@
 {% block content %}
 <div class="pagos-container">
     <h1>Registro de Pago</h1>
+    <!-- MANUAL FORM RENDERING TO ENSURE PROPER FIELD NAMES -->
     <form method="post" enctype="multipart/form-data" id="payment-form">
         {% csrf_token %}
-        {% for field in form %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.help_text %}
-                    <small class="small">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                    <span class="error">{{ error }}</span>
-                {% endfor %}
-            </div>
-        {% endfor %}
+        
+        <!-- Amount Paid Field -->
         <div class="form-group">
-            <button type="submit">Subir Comprobante</button>
+            <label for="id_amount_paid">Monto pagado:</label>
+            <input type="number" 
+                   name="amount_paid" 
+                   id="id_amount_paid"
+                   step="0.01" 
+                   min="0.01" 
+                   placeholder="0.00"
+                   required
+                   class="form-control">
+            <small class="small">Ingrese el monto pagado en pesos</small>
+            {% for error in form.amount_paid.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Payment Date Field -->
+        <div class="form-group">
+            <label for="id_payment_date">Fecha de pago:</label>
+            <input type="date" 
+                   name="payment_date" 
+                   id="id_payment_date"
+                   required
+                   class="form-control">
+            <small class="small">Fecha de pago</small>
+            {% for error in form.payment_date.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Payment Method Field -->
+        <div class="form-group">
+            <label for="id_payment_method">Método de pago:</label>
+            <select name="payment_method" 
+                    id="id_payment_method"
+                    required
+                    class="form-control">
+                <option value="transfer">Transferencia Bancaria</option>
+                <option value="deposit">Depósito Bancario</option>
+            </select>
+            <small class="small">Método de pago utilizado.</small>
+            {% for error in form.payment_method.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Comments Field (Optional) -->
+        <div class="form-group">
+            <label for="id_comments">Comentarios:</label>
+            <textarea name="comments" 
+                      id="id_comments"
+                      rows="3" 
+                      placeholder="Ingrese cualquier comentario adicional (opcional)"
+                      class="form-control"></textarea>
+            <small class="small">Comentario (opcional).</small>
+            {% for error in form.comments.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Proof of Payment Field -->
+        <div class="form-group">
+            <label for="id_proof_of_payment">Comprobante de pago:</label>
+            <input type="file" 
+                   name="proof_of_payment" 
+                   id="id_proof_of_payment"
+                   accept="image/*"
+                   required
+                   class="form-control">
+            <small class="small">Imagen del comprobante de pago.</small>
+            {% for error in form.proof_of_payment.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <button type="submit" id="submit-button">Subir Comprobante</button>
         </div>
     </form>
     <div id="upload-status"></div>
 </div>
+
+<!-- Debug script to verify form data -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('payment-form');
+    if (form) {
+        console.log('=== MANUAL FORM FIELD DEBUG ===');
+        const formElements = form.querySelectorAll('input, select, textarea');
+        formElements.forEach(element => {
+            console.log(`Element: ${element.tagName}, name: "${element.name}", id: "${element.id}", type: "${element.type}", required: ${element.required}`);
+        });
+        
+        // Override form submission to debug
+        form.addEventListener('submit', function(e) {
+            console.log('=== MANUAL FORM SUBMIT DEBUG ===');
+            const formData = new FormData(this);
+            console.log('FormData entries:');
+            for (let pair of formData.entries()) {
+                console.log(`  ${pair[0]}: ${pair[1]}`);
+            }
+            console.log('Raw form values:');
+            console.log('  amount_paid:', this.elements['amount_paid'].value);
+            console.log('  payment_date:', this.elements['payment_date'].value);
+            console.log('  payment_method:', this.elements['payment_method'].value);
+            console.log('  comments:', this.elements['comments'].value);
+            console.log('  proof_of_payment:', this.elements['proof_of_payment'].files[0]);
+        });
+    }
+});
+</script>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pagos.js' %}"></script>
 {% endblock %}

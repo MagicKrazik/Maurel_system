@@ -365,69 +365,135 @@ def dashboard(request):
         return redirect('home')
     
 
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def pagos(request):
     if request.method == 'POST':
+        print("=== PAGOS DEBUG: POST request received ===")
+        print(f"POST data: {dict(request.POST)}")
+        print(f"FILES data: {dict(request.FILES)}")
+        print(f"User: {request.user}")
+        print(f"Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
+        
         form = PaymentUploadForm(request.POST, request.FILES)
+        
+        print(f"Form is_valid(): {form.is_valid()}")
+        
+        if not form.is_valid():
+            print(f"Form errors: {dict(form.errors)}")
+            print(f"Form non_field_errors: {form.non_field_errors()}")
+            
+            # Debug each field individually
+            for field_name, field in form.fields.items():
+                field_value = request.POST.get(field_name, 'NOT_PROVIDED')
+                file_value = request.FILES.get(field_name, 'NO_FILE')
+                print(f"Field '{field_name}':")
+                print(f"  - Required: {field.required}")
+                print(f"  - POST value: '{field_value}'")
+                print(f"  - FILE value: '{file_value}'")
+                if field_name in form.errors:
+                    print(f"  - Errors: {form.errors[field_name]}")
+                print()
+                
+            # Check cleaned_data
+            print(f"Form cleaned_data: {getattr(form, 'cleaned_data', 'NO_CLEANED_DATA')}")
+        
         if form.is_valid():
-            payment = form.save(commit=False)
-            payment.user = request.user
-            payment.month = payment.payment_date.replace(day=1)
-            payment.save()
+            try:
+                print("=== SAVING PAYMENT ===")
+                payment = form.save(commit=False)
+                payment.user = request.user
+                payment.month = payment.payment_date.replace(day=1)
+                print(f"Payment object created: {payment}")
+                payment.save()
+                print(f"Payment saved with ID: {payment.id}")
 
-            # Update MonthlyFees
-            monthly_fee, created = MonthlyFees.objects.get_or_create(
-                user=request.user, 
-                month=payment.month
-            )
-            monthly_fee.paid_amount += payment.amount_paid
-            if monthly_fee.paid_amount >= monthly_fee.total_fee:
-                monthly_fee.is_paid = True
-            monthly_fee.save()
+                # Update MonthlyFees
+                monthly_fee, created = MonthlyFees.objects.get_or_create(
+                    user=request.user, 
+                    month=payment.month
+                )
+                print(f"MonthlyFee {'created' if created else 'found'}: {monthly_fee}")
+                
+                monthly_fee.paid_amount += payment.amount_paid
+                if monthly_fee.paid_amount >= monthly_fee.total_fee:
+                    monthly_fee.is_paid = True
+                monthly_fee.save()
+                print(f"MonthlyFee updated: paid_amount={monthly_fee.paid_amount}, is_paid={monthly_fee.is_paid}")
 
-            # Generate PDF report
-            report_filename = f"{request.user.username}.{payment.month.strftime('%m.%Y')}.pdf"
-            report_path = generate_payment_report(payment, report_filename)
-            
-            # Save the report file path to the PaymentReport instance
-            payment.report_file.name = report_path
-            payment.save()
+                # Generate PDF report
+                report_filename = f"{request.user.username}.{payment.month.strftime('%m.%Y')}.pdf"
+                print(f"Generating PDF: {report_filename}")
+                report_path = generate_payment_report(payment, report_filename)
+                print(f"PDF generated: {report_path}")
+                
+                # Save the report file path to the PaymentReport instance
+                payment.report_file.name = report_path
+                payment.save()
+                print(f"Payment updated with report file: {payment.report_file.name}")
 
-            # Create a Document object for the payment report
-            Document.objects.create(
-                title=f"Pago de Mantenimiento - {request.user.username} - {payment.month.strftime('%B %Y')}",
-                document_type='pagos_mantenimiento',
-                file=payment.report_file,
-                date=payment.payment_date,
-                uploaded_by=request.user
-            )
+                # Create a Document object for the payment report
+                document = Document.objects.create(
+                    title=f"Pago de Mantenimiento - {request.user.username} - {payment.month.strftime('%B %Y')}",
+                    document_type='pagos_mantenimiento',
+                    file=payment.report_file,
+                    date=payment.payment_date,
+                    uploaded_by=request.user
+                )
+                print(f"Document created: {document}")
 
-            # Send confirmation emails
-            email_sent = send_payment_confirmation_emails(payment)
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                response_data = {
-                    'success': True, 
-                    'message': 'Comprobante de pago subido exitosamente.'
-                }
-                if not email_sent:
-                    response_data['warning'] = 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.'
-                return JsonResponse(response_data)
-            else:
-                messages.success(request, 'Comprobante de pago subido exitosamente.')
-                if not email_sent:
-                    messages.warning(request, 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.')
-                return redirect('dashboard')
+                # Send confirmation emails
+                print("Sending confirmation emails...")
+                email_sent = send_payment_confirmation_emails(payment)
+                print(f"Emails sent: {email_sent}")
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    response_data = {
+                        'success': True, 
+                        'message': 'Comprobante de pago subido exitosamente.'
+                    }
+                    if not email_sent:
+                        response_data['warning'] = 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.'
+                    print(f"Returning AJAX response: {response_data}")
+                    return JsonResponse(response_data)
+                else:
+                    messages.success(request, 'Comprobante de pago subido exitosamente.')
+                    if not email_sent:
+                        messages.warning(request, 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.')
+                    return redirect('dashboard')
+                    
+            except Exception as e:
+                print(f"=== ERROR during payment processing: {str(e)} ===")
+                import traceback
+                print(f"Traceback: {traceback.format_exc()}")
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False, 
+                        'message': f'Error interno: {str(e)}'
+                    })
+                else:
+                    messages.error(request, f'Error al procesar el pago: {str(e)}')
+                    
         else:
+            print("=== FORM VALIDATION FAILED ===")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors})
+                response_data = {'success': False, 'errors': dict(form.errors)}
+                print(f"Returning AJAX error response: {response_data}")
+                return JsonResponse(response_data)
             else:
                 messages.error(request, 'Error en el formulario. Por favor, corrija los errores.')
     else:
+        print("=== PAGOS DEBUG: GET request ===")
         form = PaymentUploadForm()
+        print(f"Form fields: {list(form.fields.keys())}")
+        for field_name, field in form.fields.items():
+            print(f"Field '{field_name}': required={field.required}, widget={type(field.widget).__name__}")
     
     return render(request, 'pagos.html', {'form': form})
+
 
 @login_required
 def qys(request):

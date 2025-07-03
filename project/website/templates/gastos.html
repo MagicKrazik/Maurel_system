@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Torres del Maurel - Home{% endblock %}
+{% block title %}Torres del Maurel - Registro de Gastos{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/gastos.css' %}">
@@ -11,6 +11,7 @@
 <div class="gastos-container dashboard-container">
     <h1>Registro de Gastos</h1>
 
+    <!-- UPDATED: Added correct form ID for universal handler -->
     <form method="post" enctype="multipart/form-data" id="expense-form">
         {% csrf_token %}
         {% for field in form %}
@@ -27,14 +28,16 @@
         {% endfor %}
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Subir Comprobante</button>
+            <!-- UPDATED: Added correct button ID -->
+            <button type="submit" id="submit-button" class="btn btn-primary">Subir Comprobante</button>
         </div>
     </form>
 
+    <!-- UPDATED: Universal status container -->
     <div id="upload-status"></div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/gastos.js' %}"></script>
+<!-- REMOVED: Old gastos.js - now handled by universal handler -->
 {% endblock %}

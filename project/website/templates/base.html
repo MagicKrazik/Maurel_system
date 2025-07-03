@@ -6,7 +6,8 @@
     <title>{% block title %}Torres del Maurel{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <!-- ADD THIS LINE: Enhanced accessibility CSS overlay -->
+    <!-- ADD THIS LINE: Universal Loading Overlay CSS -->
+    <link rel="stylesheet" href="{% static 'css/universal-loading.css' %}">
     <link rel="icon" type="image/png" href="{% static 'images/building.png' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -61,6 +62,18 @@
         {% endblock %}
     </div>
 
+    <!-- Universal Loading Overlay - ADD THIS SECTION -->
+    <div id="loading-overlay" class="loading-overlay loading-hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">
+                <h3>Procesando información</h3>
+                <p>Por favor espere, estamos procesando su solicitud...</p>
+                <p class="loading-step">Validando datos del formulario</p>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-content">
             © Torres del Maurel - Desarrollado por <a class='dive-link' href='http://www.dive.it.com'> dive.it.com </a> - 
@@ -69,6 +82,8 @@
     </footer>
 
     <script src="{% static 'js/base.js' %}"></script>
+    <!-- ADD THIS LINE: Universal Form Handler -->
+    <script src="{% static 'js/universal-form-handler.js' %}"></script>
     {% block extra_js %}{% endblock %}  
 </body>
 </html>
