@@ -749,22 +749,52 @@ def gastos(request):
     return render(request, 'gastos.html', {'form': form})
 
 
-
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def panel(request):
     try:
-        # Date filtering logic - START FROM JUNE 2025
+        # IMPROVED DATE PARSING WITH ERROR HANDLING
         start_date = timezone.datetime(2025, 6, 1).date()
         end_date = start_date + relativedelta(years=5, months=-1)
         
-        selected_date = request.GET.get('date')
+        # Get date parameter with improved parsing
+        selected_date = request.GET.get('date', '').strip()
+        selected_year = None
+        selected_month = None
+        current_month = None
+        
         if selected_date:
-            selected_year, selected_month = map(int, selected_date.split('-'))
-            current_month = datetime(selected_year, selected_month, 1).date()
-        else:
-            # Default to current date or June 2025 if before that
+            try:
+                # Clean the date parameter - remove any duplicate parameters
+                # Handle cases like "2025-07?date=2025-07" by taking only the first part
+                if '?' in selected_date:
+                    selected_date = selected_date.split('?')[0]
+                
+                # Validate format and parse
+                if '-' in selected_date and len(selected_date.split('-')) == 2:
+                    year_str, month_str = selected_date.split('-')
+                    
+                    # Convert to integers with validation
+                    selected_year = int(year_str)
+                    selected_month = int(month_str)
+                    
+                    # Validate year and month ranges
+                    if not (2025 <= selected_year <= 2030):
+                        raise ValueError(f"Year {selected_year} out of valid range")
+                    if not (1 <= selected_month <= 12):
+                        raise ValueError(f"Month {selected_month} out of valid range")
+                    
+                    current_month = datetime(selected_year, selected_month, 1).date()
+                else:
+                    raise ValueError(f"Invalid date format: {selected_date}")
+                    
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Invalid date parameter '{selected_date}': {str(e)}")
+                # Fall back to default date
+                selected_date = None
+        
+        # Set default values if no valid date was provided
+        if not selected_date or not current_month:
             current_date = timezone.now().date()
             if current_date >= start_date:
                 current_month = current_date.replace(day=1)
@@ -959,7 +989,7 @@ def panel(request):
                     messages.error(request, 'Anuncio no encontrado.')
                     return redirect('panel')
 
-            # Handle apartment fees (existing code)
+            # Handle apartment fees (existing code) - FIXED URL BUILDING
             else:
                 apartment_id = request.POST.get('apartment_id')
                 if apartment_id:
@@ -1039,6 +1069,8 @@ def panel(request):
             return JsonResponse({'success': False, 'errors': 'Error interno del servidor'})
         messages.error(request, 'Error interno del servidor')
         return redirect('panel')
+
+
         
 @login_required
 @user_passes_test(lambda u: u.is_staff)

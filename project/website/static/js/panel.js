@@ -9,6 +9,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // FIXED: Helper function to get clean current date parameter
+    function getCurrentDateParam() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentDate = urlParams.get('date');
+        
+        // Clean the date parameter if it contains duplicates or invalid characters
+        if (currentDate && currentDate.includes('?')) {
+            currentDate = currentDate.split('?')[0];
+        }
+        
+        // Validate the date format (YYYY-MM)
+        if (currentDate && /^\d{4}-\d{2}$/.test(currentDate)) {
+            return currentDate;
+        }
+        
+        return null;
+    }
+
+    // FIXED: Helper function to build clean URLs
+    function buildCleanURL(baseUrl, dateParam = null) {
+        // Remove any existing query parameters from base URL
+        const cleanBaseUrl = baseUrl.split('?')[0];
+        
+        if (dateParam) {
+            return `${cleanBaseUrl}?date=${dateParam}`;
+        }
+        
+        return cleanBaseUrl;
+    }
+
     // Cleanup functionality - NEW SECTION
     const cleanupForm = document.getElementById('cleanup-form');
     const previewBtn = document.getElementById('preview-btn');
@@ -56,7 +86,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        return fetch(window.location.href, {
+        // FIXED: Use clean URL building
+        const currentDate = getCurrentDateParam();
+        const requestUrl = buildCleanURL(window.location.href, currentDate);
+        
+        return fetch(requestUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -266,12 +300,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Announcements functionality (existing code)
+    // FIXED: Announcements functionality with clean URL handling
     function handleAnnouncementSubmit(form, action) {
         const formData = new FormData(form);
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        return fetch(form.action, {
+        // FIXED: Use clean URL building
+        const currentDate = getCurrentDateParam();
+        const requestUrl = buildCleanURL(form.action, currentDate);
+
+        return fetch(requestUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -361,19 +399,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Apartment fees functionality
+    // FIXED: Apartment fees functionality with proper URL handling
     const apartmentForms = document.querySelectorAll('.apartment-card form');
     apartmentForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             
-            const currentDate = new URLSearchParams(window.location.search).get('date');
-            if (currentDate) {
-                formData.append('date', currentDate);
-            }
+            // FIXED: Get clean date parameter and build proper URL
+            const currentDate = getCurrentDateParam();
+            const requestUrl = buildCleanURL(this.action, currentDate);
             
-            fetch(this.action + (currentDate ? `?date=${currentDate}` : ''), {
+            fetch(requestUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {
