@@ -1257,11 +1257,29 @@ def panel(request):
         return redirect('panel')
 
 
-        
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def generate_monthly_balance_report(request):
+    """
+    Generate professional monthly balance report with enhanced design
+    """
     try:
+        # Add missing imports for this function
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from io import BytesIO
+        from calendar import month_name
+        from datetime import datetime
+        from django.http import HttpResponse
+        from .models import PaymentReport, ExpenseReport
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
         if request.method == 'POST':
             year = int(request.POST.get('year'))
             month = int(request.POST.get('month'))
@@ -1269,16 +1287,83 @@ def generate_monthly_balance_report(request):
             year = int(request.GET.get('year'))
             month = int(request.GET.get('month'))
 
-        # Create the PDF
+        # Create the PDF with professional styling
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        
+        # Use letter size for consistency with other reports
+        doc = SimpleDocTemplate(
+            buffer, 
+            pagesize=letter,
+            rightMargin=50,
+            leftMargin=50,
+            topMargin=120,
+            bottomMargin=80
+        )
+        
         elements = []
         styles = getSampleStyleSheet()
+        
+        # Define professional colors
+        BRAND_BLUE = colors.HexColor('#4a90e2')
+        BRAND_BLUE_DARK = colors.HexColor('#357abd')
+        BRAND_BLUE_LIGHT = colors.HexColor('#e8f4fd')
+        DARK_GRAY = colors.HexColor('#2a2a2a')
+        LIGHT_GRAY = colors.HexColor('#f8f9fa')
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=BRAND_BLUE,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Heading2'],
+            fontSize=16,
+            textColor=BRAND_BLUE_DARK,
+            spaceAfter=20,
+            spaceBefore=20,
+            fontName='Helvetica-Bold'
+        )
 
-        # Title
-        title = f"Reporte de Balance Mensual - {month}/{year}"
-        elements.append(Paragraph(title, styles['Heading1']))
-        elements.append(Spacer(1, 12))
+        # Spanish month names
+        months_spanish = {
+            'January': 'ENERO', 'February': 'FEBRERO', 'March': 'MARZO', 'April': 'ABRIL',
+            'May': 'MAYO', 'June': 'JUNIO', 'July': 'JULIO', 'August': 'AGOSTO',
+            'September': 'SEPTIEMBRE', 'October': 'OCTUBRE', 'November': 'NOVIEMBRE', 'December': 'DICIEMBRE'
+        }
+        
+        month_spanish = months_spanish.get(month_name[month], month_name[month].upper())
+        
+        # Header with logo and title
+        header_data = [
+            ['', f'REPORTE FINANCIERO MENSUAL', ''],
+            ['', f'{month_spanish} {year}', ''],
+            ['', f'Torres del Maurel', '']
+        ]
+        
+        header_table = Table(header_data, colWidths=[100, 312, 100])
+        header_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (1, 0), (1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (1, 0), (1, 0), 20),
+            ('TEXTCOLOR', (1, 0), (1, 0), BRAND_BLUE),
+            ('FONTNAME', (1, 1), (1, 1), 'Helvetica-Bold'),
+            ('FONTSIZE', (1, 1), (1, 1), 16),
+            ('TEXTCOLOR', (1, 1), (1, 1), BRAND_BLUE_DARK),
+            ('FONTNAME', (1, 2), (1, 2), 'Helvetica'),
+            ('FONTSIZE', (1, 2), (1, 2), 12),
+            ('TEXTCOLOR', (1, 2), (1, 2), DARK_GRAY),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(header_table)
+        elements.append(Spacer(1, 30))
 
         # Get data
         payments = PaymentReport.objects.filter(
@@ -1296,99 +1381,289 @@ def generate_monthly_balance_report(request):
         total_expenses = sum(expense.amount for expense in expenses)
         total_balance = total_income - total_expenses
 
-        # Summary Table
+        # Executive Summary Section
+        elements.append(Paragraph("RESUMEN EJECUTIVO", subtitle_style))
+        
         summary_data = [
-            ['Resumen Financiero', 'Monto'],
-            ['Total Ingresos', f"${total_income:,.2f}"],
-            ['Total Gastos', f"${total_expenses:,.2f}"],
-            ['Balance Final', f"${total_balance:,.2f}"]
+            ['CONCEPTO', 'MONTO', 'PORCENTAJE'],
+            ['Total de Ingresos', f"${total_income:,.2f} MXN", "100.0%" if total_income > 0 else "0.0%"],
+            ['Total de Gastos', f"${total_expenses:,.2f} MXN", f"{(total_expenses/total_income*100):,.1f}%" if total_income > 0 else "0.0%"],
+            ['Balance Neto', f"${total_balance:,.2f} MXN", f"{(total_balance/total_income*100):,.1f}%" if total_income > 0 else "0.0%"]
         ]
 
-        summary_table = Table(summary_data)
+        summary_table = Table(summary_data, colWidths=[200, 150, 100])
         summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            # Header styling
+            ('BACKGROUND', (0, 0), (-1, 0), BRAND_BLUE),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f5f5f5')),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+            ('TOPPADDING', (0, 0), (-1, 0), 15),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 15),
+            
+            # Data rows
+            ('BACKGROUND', (0, 1), (-1, -1), LIGHT_GRAY),
+            ('TEXTCOLOR', (0, 1), (-1, -1), DARK_GRAY),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('TOPPADDING', (0, 1), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 10),
+            
+            # Special styling for balance row
+            ('BACKGROUND', (0, 3), (-1, 3), BRAND_BLUE_LIGHT),
+            ('FONTNAME', (0, 3), (-1, 3), 'Helvetica-Bold'),
+            ('TEXTCOLOR', (0, 3), (-1, 3), BRAND_BLUE_DARK),
+            
+            # Grid
+            ('GRID', (0, 0), (-1, -1), 1, colors.white),
+            ('LINEBELOW', (0, 0), (-1, 0), 2, colors.white),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]))
         elements.append(summary_table)
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 30))
 
-        # Payments Detail
-        elements.append(Paragraph("Detalle de Ingresos", styles['Heading2']))
-        elements.append(Spacer(1, 12))
-
+        # Income Details Section
+        elements.append(Paragraph("DETALLE DE INGRESOS", subtitle_style))
+        
         if payments.exists():
-            payment_data = [['Fecha', 'Departamento', 'Método de Pago', 'Monto']]
+            income_data = [['FECHA', 'DEPARTAMENTO', 'MÉTODO', 'MONTO']]
             for payment in payments:
-                payment_data.append([
+                income_data.append([
                     payment.payment_date.strftime('%d/%m/%Y'),
                     payment.user.apartment_number or 'N/A',
                     payment.get_payment_method_display(),
                     f"${payment.amount_paid:,.2f}"
                 ])
-            payment_data.append(['TOTAL', '', '', f"${total_income:,.2f}"])
+            
+            # Add total row
+            income_data.append(['', '', 'TOTAL INGRESOS', f"${total_income:,.2f}"])
 
-            payment_table = Table(payment_data, colWidths=['20%', '25%', '35%', '20%'])
-            payment_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            income_table = Table(income_data, colWidths=[80, 100, 120, 100])
+            income_table.setStyle(TableStyle([
+                # Header row styling
+                ('BACKGROUND', (0, 0), (-1, 0), BRAND_BLUE),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('ALIGN', (-1, 1), (-1, -1), 'RIGHT'),
-                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f5f5f5')),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('TOPPADDING', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                
+                # Data rows
+                ('BACKGROUND', (0, 1), (-1, -2), LIGHT_GRAY),
+                ('TEXTCOLOR', (0, 1), (-1, -2), DARK_GRAY),
+                ('FONTNAME', (0, 1), (-1, -2), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -2), 9),
+                ('TOPPADDING', (0, 1), (-1, -2), 8),
+                ('BOTTOMPADDING', (0, 1), (-1, -2), 8),
+                
+                # Total row styling
+                ('BACKGROUND', (0, -1), (-1, -1), BRAND_BLUE_DARK),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
                 ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, -1), (-1, -1), 10),
+                ('TOPPADDING', (0, -1), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, -1), (-1, -1), 10),
+                
+                # Grid and alternating colors
+                ('GRID', (0, 0), (-1, -1), 1, colors.white),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -2), [LIGHT_GRAY, colors.white]),
+                ('ALIGN', (3, 1), (3, -1), 'RIGHT'),  # Right align amounts
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ]))
-            elements.append(payment_table)
+            elements.append(income_table)
         else:
-            elements.append(Paragraph("No hay ingresos registrados para este período", styles['Normal']))
+            no_income_para = Paragraph(
+                "No se registraron ingresos para este período.",
+                ParagraphStyle('NoData', fontSize=10, textColor=DARK_GRAY, alignment=TA_CENTER)
+            )
+            elements.append(no_income_para)
 
         elements.append(Spacer(1, 20))
 
-        # Expenses Detail
-        elements.append(Paragraph("Detalle de Gastos", styles['Heading2']))
-        elements.append(Spacer(1, 12))
+        # Expenses Details Section
+        elements.append(Paragraph("DETALLE DE GASTOS", subtitle_style))
 
         if expenses.exists():
-            expense_data = [['Fecha', 'Concepto', 'Método de Pago', 'Monto']]
+            expense_data = [['FECHA', 'CONCEPTO', 'MÉTODO', 'MONTO']]
             for expense in expenses:
                 expense_data.append([
                     expense.expense_date.strftime('%d/%m/%Y'),
-                    expense.expense_concept,
+                    expense.expense_concept[:25] + '...' if len(expense.expense_concept) > 25 else expense.expense_concept,
                     expense.get_payment_method_display(),
                     f"${expense.amount:,.2f}"
                 ])
-            expense_data.append(['TOTAL', '', '', f"${total_expenses:,.2f}"])
+            
+            # Add total row
+            expense_data.append(['', '', 'TOTAL GASTOS', f"${total_expenses:,.2f}"])
 
-            expense_table = Table(expense_data, colWidths=['20%', '25%', '35%', '20%'])
+            expense_table = Table(expense_data, colWidths=[80, 140, 80, 100])
             expense_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1896d1')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                # Header row styling
+                ('BACKGROUND', (0, 0), (-1, 0), BRAND_BLUE),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('ALIGN', (-1, 1), (-1, -1), 'RIGHT'),
-                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f5f5f5')),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('TOPPADDING', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                
+                # Data rows
+                ('BACKGROUND', (0, 1), (-1, -2), LIGHT_GRAY),
+                ('TEXTCOLOR', (0, 1), (-1, -2), DARK_GRAY),
+                ('FONTNAME', (0, 1), (-1, -2), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -2), 9),
+                ('TOPPADDING', (0, 1), (-1, -2), 8),
+                ('BOTTOMPADDING', (0, 1), (-1, -2), 8),
+                
+                # Total row styling
+                ('BACKGROUND', (0, -1), (-1, -1), BRAND_BLUE_DARK),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
                 ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, -1), (-1, -1), 10),
+                ('TOPPADDING', (0, -1), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, -1), (-1, -1), 10),
+                
+                # Grid and alignment
+                ('GRID', (0, 0), (-1, -1), 1, colors.white),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -2), [LIGHT_GRAY, colors.white]),
+                ('ALIGN', (3, 1), (3, -1), 'RIGHT'),  # Right align amounts
+                ('ALIGN', (1, 1), (1, -2), 'LEFT'),   # Left align concepts
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ]))
             elements.append(expense_table)
         else:
-            elements.append(Paragraph("No hay gastos registrados para este período", styles['Normal']))
+            no_expense_para = Paragraph(
+                "No se registraron gastos para este período.",
+                ParagraphStyle('NoData', fontSize=10, textColor=DARK_GRAY, alignment=TA_CENTER)
+            )
+            elements.append(no_expense_para)
 
-        # Build PDF
-        doc.build(elements)
+        elements.append(Spacer(1, 30))
+
+        # Financial Analysis Section
+        elements.append(Paragraph("ANÁLISIS FINANCIERO", subtitle_style))
+        
+        # Analysis text based on balance - IN SPANISH
+        if total_balance > 0:
+            analysis_text = f"""
+            <b>Resultado Positivo:</b> El mes de {month_spanish.lower()} {year} muestra un balance positivo 
+            de ${total_balance:,.2f} MXN. Los ingresos superaron a los gastos en un 
+            {((total_balance/total_income)*100):,.1f}%, indicando una gestión financiera eficiente.
+            """
+        elif total_balance < 0:
+            analysis_text = f"""
+            <b>Déficit Registrado:</b> El mes de {month_spanish.lower()} {year} presenta un déficit 
+            de ${abs(total_balance):,.2f} MXN. Los gastos superaron a los ingresos, requiriendo 
+            atención en la planificación financiera.
+            """
+        else:
+            analysis_text = f"""
+            <b>Balance Equilibrado:</b> El mes de {month_spanish.lower()} {year} muestra un balance 
+            neutro, con ingresos y gastos equiparados.
+            """
+
+        analysis_style = ParagraphStyle(
+            'Analysis',
+            fontSize=10,
+            textColor=DARK_GRAY,
+            alignment=TA_JUSTIFY,
+            spaceAfter=15,
+            leftIndent=20,
+            rightIndent=20
+        )
+        
+        elements.append(Paragraph(analysis_text, analysis_style))
+
+        # Statistics Section
+        elements.append(Spacer(1, 20))
+        
+        stats_data = [
+            ['ESTADÍSTICAS DEL PERÍODO', 'VALOR'],
+            ['Número de Pagos Recibidos', str(payments.count())],
+            ['Número de Gastos Registrados', str(expenses.count())],
+            ['Promedio por Pago', f"${(total_income/payments.count()):,.2f}" if payments.count() > 0 else "$0.00"],
+            ['Promedio por Gasto', f"${(total_expenses/expenses.count()):,.2f}" if expenses.count() > 0 else "$0.00"],
+        ]
+
+        stats_table = Table(stats_data, colWidths=[300, 150])
+        stats_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), BRAND_BLUE_LIGHT),
+            ('TEXTCOLOR', (0, 0), (-1, 0), BRAND_BLUE_DARK),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, BRAND_BLUE),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(stats_table)
+
+        # Footer information
+        elements.append(Spacer(1, 30))
+        
+        # Format generation date in Spanish
+        current_date = datetime.now()
+        generation_date_spanish = current_date.strftime('%d de %B de %Y a las %H:%M hrs')
+        for eng, esp in months_spanish.items():
+            generation_date_spanish = generation_date_spanish.replace(eng, esp.lower())
+        
+        footer_text = f"""
+        <b>Información del Documento:</b><br/>
+        Reporte generado el {generation_date_spanish}<br/>
+        Generado por: {request.user.get_full_name() or request.user.username}<br/>
+        Sistema de Gestión - Torres del Maurel<br/>
+        <i>Este documento es de carácter oficial y contiene información confidencial.</i>
+        """
+        
+        footer_style = ParagraphStyle(
+            'Footer',
+            fontSize=8,
+            textColor=DARK_GRAY,
+            alignment=TA_CENTER,
+            spaceAfter=10
+        )
+        
+        elements.append(Paragraph(footer_text, footer_style))
+
+        # Build the PDF
+        def add_page_header_footer(canvas, doc):
+            """Add header and footer to each page"""
+            # Header
+            canvas.setFillColor(BRAND_BLUE)
+            canvas.rect(0, doc.height + doc.topMargin - 20, doc.width + doc.leftMargin + doc.rightMargin, 40, fill=True, stroke=False)
+            
+            canvas.setFillColor(colors.white)
+            canvas.setFont("Helvetica-Bold", 12)
+            # Use drawString with calculated center position instead of drawCentredText
+            text = "TORRES DEL MAUREL"
+            text_width = canvas.stringWidth(text, "Helvetica-Bold", 12)
+            center_x = (doc.width + doc.leftMargin + doc.rightMargin) / 2 - text_width / 2
+            canvas.drawString(center_x, doc.height + doc.topMargin - 5, text)
+            
+            # Footer
+            canvas.setFillColor(DARK_GRAY)
+            canvas.rect(0, 0, doc.width + doc.leftMargin + doc.rightMargin, 50, fill=True, stroke=False)
+            
+            canvas.setFillColor(colors.white)
+            canvas.setFont("Helvetica", 8)
+            canvas.drawString(doc.leftMargin, 30, f"© {datetime.now().year} Torres del Maurel - Reporte Financiero Oficial")
+            canvas.drawRightString(doc.width + doc.leftMargin, 30, f"Página 1 de 1")
+            canvas.drawRightString(doc.width + doc.leftMargin, 15, f"ID: REPORT-{year}{month:02d}")
+
+        # Build PDF with custom page template
+        doc.build(elements, onFirstPage=add_page_header_footer, onLaterPages=add_page_header_footer)
+        
         pdf = buffer.getvalue()
         buffer.close()
 
         # Create response
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="balance_mensual_{month_name[month]}_{year}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="Reporte_Financiero_{month_spanish}_{year}.pdf"'
         response.write(pdf)
 
         return response
@@ -1397,6 +1672,8 @@ def generate_monthly_balance_report(request):
         logger.error(f"Error generating balance report: {str(e)}")
         messages.error(request, 'Error al generar el reporte. Por favor, inténtelo de nuevo.')
         return redirect('panel')
+
+
 
 ## forgot password view:
 

@@ -47,7 +47,7 @@ class SpanishPasswordChangeForm(PasswordChangeForm):
         help_text="Ingrese la misma contraseña que antes, para verificación.",
     )
 
-# COMPLETELY FIXED PAYMENT FORM
+
 class PaymentUploadForm(forms.ModelForm):
     amount_paid = forms.DecimalField(
         label='Monto pagado',
@@ -143,7 +143,7 @@ class PaymentUploadForm(forms.ModelForm):
         
         return file
 
-# FIXED EXPENSE FORM
+
 class ExpenseUploadForm(forms.ModelForm):
     amount = forms.DecimalField(
         label='Monto del gasto',

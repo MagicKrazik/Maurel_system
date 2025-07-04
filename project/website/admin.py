@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, PaymentReport, InitialBalance
-from datetime import timezone
+from datetime import date  # FIXED: Import date instead of timezone
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -44,8 +44,8 @@ class InitialBalanceAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # Show only records from June 2025 onwards
-        return qs.filter(effective_date__gte=timezone.datetime(2025, 6, 1).date())
+        # FIXED: Use date(2025, 6, 1) instead of timezone.datetime(2025, 6, 1).date()
+        return qs.filter(effective_date__gte=date(2025, 6, 1))
 
     class Media:
         css = {
