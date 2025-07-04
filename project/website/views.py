@@ -496,72 +496,192 @@ def pagos(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def qys(request):
-    form = ComplaintSuggestionForm(user=request.user)
     if request.method == 'POST':
+        print("=== QYS DEBUG: POST request received ===")
+        print(f"POST data: {dict(request.POST)}")
+        print(f"FILES data: {dict(request.FILES)}")
+        print(f"User: {request.user}")
+        print(f"Is AJAX: {request.headers.get('X-Requested-With') == 'XMLHttpRequest'}")
+        
+        # Handle different POST actions
         if 'submit_qys' in request.POST:
+            # Handle new QYS submission
             form = ComplaintSuggestionForm(request.POST, request.FILES, user=request.user)
+            
+            print(f"Form is_valid(): {form.is_valid()}")
+            
+            if not form.is_valid():
+                print(f"Form errors: {dict(form.errors)}")
+                print(f"Form non_field_errors: {form.non_field_errors()}")
+                
+                # Debug each field individually
+                for field_name, field in form.fields.items():
+                    field_value = request.POST.get(field_name, 'NOT_PROVIDED')
+                    file_value = request.FILES.get(field_name, 'NO_FILE')
+                    print(f"Field '{field_name}':")
+                    print(f"  - Required: {field.required}")
+                    print(f"  - POST value: '{field_value}'")
+                    print(f"  - FILE value: '{file_value}'")
+                    if field_name in form.errors:
+                        print(f"  - Errors: {form.errors[field_name]}")
+                    print()
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False, 
+                        'errors': dict(form.errors),
+                        'message': 'Error en el formulario. Por favor, corrija los errores.'
+                    })
+                else:
+                    messages.error(request, 'Error en el formulario. Por favor, corrija los errores.')
+            
             if form.is_valid():
-                qys = form.save(commit=False)
-                qys.user = request.user
-                qys.save()
+                try:
+                    print("=== SAVING QYS ===")
+                    qys = form.save(commit=False)
+                    qys.user = request.user
+                    print(f"QYS object created: {qys}")
+                    qys.save()
+                    print(f"QYS saved with ID: {qys.id}")
 
-                # Send notification email
-                email_sent = send_qys_notification_emails(qys)
-                
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                    response_data = {
-                        'success': True,
-                        'message': 'Su queja o sugerencia ha sido enviada exitosamente.',
-                        'new_qys': {
-                            'id': qys.id,
-                            'type': qys.get_type_display(),
-                            'category': qys.get_category_display(),
-                            'apartment_number': qys.apartment_number,
-                            'description': qys.description,
-                            'status': qys.get_status_display(),
-                            'created_at': qys.created_at.strftime('%d/%m/%Y %H:%M'),
-                            'attended_at': qys.attended_at.strftime('%d/%m/%Y %H:%M') if qys.attended_at else '-',
-                            'is_staff': request.user.is_staff,
-                            'status_choices': qys.STATUS_CHOICES,
+                    # Send notification email
+                    print("Sending notification emails...")
+                    email_sent = send_qys_notification_emails(qys)
+                    print(f"Emails sent: {email_sent}")
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        response_data = {
+                            'success': True,
+                            'message': 'Su queja o sugerencia ha sido enviada exitosamente.',
+                            'new_qys': {
+                                'id': qys.id,
+                                'type': qys.get_type_display(),
+                                'category': qys.get_category_display(),
+                                'apartment_number': qys.apartment_number,
+                                'description': qys.description,
+                                'status': qys.get_status_display(),
+                                'created_at': qys.created_at.strftime('%d/%m/%Y %H:%M'),
+                                'attended_at': qys.attended_at.strftime('%d/%m/%Y %H:%M') if qys.attended_at else None,
+                                'is_staff': request.user.is_staff,
+                                'status_choices': qys.STATUS_CHOICES if request.user.is_staff else None,
+                            }
                         }
-                    }
-                    return JsonResponse(response_data)
-                
-                messages.success(request, 'Su queja o sugerencia ha sido enviada exitosamente.')
-                return redirect('qys')
-                
-            elif request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors})
-                
+                        if not email_sent:
+                            response_data['warning'] = 'El reporte se registró correctamente pero hubo un problema al enviar las notificaciones.'
+                        print(f"Returning AJAX response: {response_data}")
+                        return JsonResponse(response_data)
+                    else:
+                        messages.success(request, 'Su queja o sugerencia ha sido enviada exitosamente.')
+                        if not email_sent:
+                            messages.warning(request, 'El reporte se registró correctamente pero hubo un problema al enviar las notificaciones.')
+                        return redirect('qys')
+                        
+                except Exception as e:
+                    print(f"=== ERROR during QYS processing: {str(e)} ===")
+                    import traceback
+                    print(f"Traceback: {traceback.format_exc()}")
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False, 
+                            'message': f'Error interno: {str(e)}'
+                        })
+                    else:
+                        messages.error(request, f'Error al procesar el reporte: {str(e)}')
+                        
         elif 'update_status' in request.POST and request.user.is_staff:
+            # Handle status update
             qys_id = request.POST.get('qys_id')
             new_status = request.POST.get('status')
-            qys = ComplaintSuggestion.objects.get(id=qys_id)
-            if new_status in dict(ComplaintSuggestion.STATUS_CHOICES):
-                qys.status = new_status
-                qys.save()
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                    return JsonResponse({
-                        'success': True,
-                        'message': 'Estado actualizado exitosamente.',
-                    })
-                messages.success(request, 'Estado actualizado exitosamente.')
-            else:
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            
+            try:
+                qys = ComplaintSuggestion.objects.get(id=qys_id)
+                if new_status in dict(ComplaintSuggestion.STATUS_CHOICES):
+                    qys.status = new_status
+                    qys.save()
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': True,
+                            'message': 'Estado actualizado exitosamente.',
+                        })
+                    messages.success(request, 'Estado actualizado exitosamente.')
+                else:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'Estado inválido.',
+                        })
+                    messages.error(request, 'Estado inválido.')
+                    
+            except ComplaintSuggestion.DoesNotExist:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({
                         'success': False,
-                        'message': 'Estado inválido.',
+                        'message': 'Reporte no encontrado.',
                     })
-                messages.error(request, 'Estado inválido.')
+                messages.error(request, 'Reporte no encontrado.')
+            except Exception as e:
+                print(f"Error updating QYS status: {str(e)}")
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error al actualizar: {str(e)}',
+                    })
+                messages.error(request, f'Error al actualizar: {str(e)}')
+                
             return redirect('qys')
             
-        elif 'delete_qys' in request.POST and request.user.is_staff:
+        elif 'delete_qys' in request.POST and request.user.is_superuser:
+            # Handle QYS deletion
             qys_id = request.POST.get('qys_id')
-            return delete_qys(request, qys_id)
+            
+            try:
+                qys = ComplaintSuggestion.objects.get(id=qys_id)
+                qys.delete()
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'La queja o sugerencia ha sido eliminada exitosamente.',
+                    })
+                messages.success(request, 'La queja o sugerencia ha sido eliminada exitosamente.')
+                
+            except ComplaintSuggestion.DoesNotExist:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Reporte no encontrado.',
+                    })
+                messages.error(request, 'Reporte no encontrado.')
+            except Exception as e:
+                print(f"Error deleting QYS: {str(e)}")
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error al eliminar: {str(e)}',
+                    })
+                messages.error(request, f'Error al eliminar: {str(e)}')
+                
+            return redirect('qys')
     
+    else:
+        # GET request - show the form
+        print("=== QYS DEBUG: GET request ===")
+        form = ComplaintSuggestionForm(user=request.user)
+        print(f"Form fields: {list(form.fields.keys())}")
+        for field_name, field in form.fields.items():
+            print(f"Field '{field_name}': required={field.required}, widget={type(field.widget).__name__}")
+    
+    # Get all QYS records for display
     all_qys = ComplaintSuggestion.objects.all().order_by('-created_at')
-    return render(request, 'qys.html', {'form': form, 'all_qys': all_qys})
+    
+    return render(request, 'qys.html', {
+        'form': form,
+        'all_qys': all_qys
+    })
 
 
 

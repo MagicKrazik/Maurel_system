@@ -1,40 +1,27 @@
-/* Mobile-first base styles */
+/* QYS Page Styles - Matching payments page design exactly */
+
+/* Mobile-first base styles - EXACT MATCH TO PAYMENTS */
 .qys-container {
     padding: 0.2rem;
     margin: 70px auto 30px;
     padding-top: 1rem;
     width: 100%;
+    max-width: 800px;
     background-color: #2A2B2A;
-    border-radius: 3px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    position: relative; /* For loading overlay positioning */
 }
 
-h1, h2 {
+.qys-container h1 {
     color: #ffffff;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
-}
-
-h1 {
-    font-size: 1.4rem;
     border-bottom: 2px solid #4a90e2;
     padding-bottom: 0.4rem;
 }
 
-h2 {
-    font-size: 1.2rem;
-    color: #4a90e2;
-}
-
-.help {
-  color: #888; /* A common, subtle gray for help text */
-  font-size: 0.85rem; /* Adjust font size if needed */
-  margin-top: 0.25rem; /* Add a little space above it */
-  font-style: italic; /* Make it italic for a distinct look */
-}
-
-/* Form sections */
-.qys-form-section,
-.all-submissions {
+/* Enhanced form groups - EXACT MATCH TO PAYMENTS */
+.form-group {
     background-color: #1e1e1e;
     border-radius: 10px;
     padding: 1rem;
@@ -42,35 +29,34 @@ h2 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.form-group {
-    margin-bottom: 1rem;
-}
-
 .form-group label {
     display: block;
-    margin-bottom: 0.4rem;
     color: #ffffff;
+    margin-bottom: 0.4rem;
     font-size: 0.95rem;
     font-weight: 500;
 }
 
-/* Form inputs */
+/* Optimized form inputs - EXACT MATCH TO PAYMENTS */
 .form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
 .form-group select,
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
+    background-color: #2a2a2a;
+    color: #ffffff;
     border: 1px solid #444;
     border-radius: 8px;
-    background-color: #2c2c2c;
-    color: #ffffff;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    margin-top: 0.25rem;
     box-sizing: border-box;
     -webkit-appearance: none;
     appearance: none;
 }
 
-/* Custom select styling */
+/* Custom select styling - EXACT MATCH TO PAYMENTS */
 .form-group select {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
@@ -79,239 +65,849 @@ h2 {
     padding-right: 2.5rem;
 }
 
-/* Buttons */
-.submit-btn,
-.delete-btn {
+/* Enhanced file input - EXACT MATCH TO PAYMENTS */
+.form-group input[type="file"] {
     width: 100%;
     padding: 0.75rem;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.form-group input[type="file"]::-webkit-file-upload-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.form-group input[type="file"]::file-selector-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Textarea specific styling */
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+/* Focus states - EXACT MATCH TO PAYMENTS */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Submit button - EXACT MATCH TO PAYMENTS */
+.form-group button[type="submit"] {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #4a90e2;
+    color: #ffffff;
     border: none;
     border-radius: 8px;
-    color: #ffffff;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    position: relative;
 }
 
-.submit-btn {
-    background-color: #4a90e2;
-    margin-top: 1rem;
-}
-
-.delete-btn {
-    background-color: #f44336;
-    margin-top: 0.5rem;
-}
-
-.submit-btn:active,
-.delete-btn:active {
+.form-group button[type="submit"]:active {
+    background-color: #3a80d2;
     transform: scale(0.98);
 }
 
-/* Status messages */
-.submission-status {
+/* Disabled submit button state - EXACT MATCH TO PAYMENTS */
+.form-group button[type="submit"]:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+.form-group button[type="submit"]:disabled:active {
+    transform: none;
+}
+
+/* Helper text and errors - EXACT MATCH TO PAYMENTS */
+.small {
+    font-size: 0.95rem;
+    color: #1E90FF;
+    margin-top: 0.5rem;
+    display: block;
+    line-height: 1.4;
+}
+
+.error {
+    color: #f44336;
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    display: block;
+    font-weight: 500;
+}
+
+/* Upload status - EXACT MATCH TO PAYMENTS */
+#upload-status {
     margin-top: 1rem;
     padding: 0.85rem;
     border-radius: 8px;
+    text-align: center;
     font-weight: 500;
     font-size: 0.95rem;
-    text-align: center;
+    min-height: 20px;
 }
 
-.submission-status.success {
-    background-color: rgba(76, 175, 80, 0.1);
-    color: #4CAF50;
-    border: 1px solid rgba(76, 175, 80, 0.2);
+#upload-status.success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.2);
 }
 
-.submission-status.error {
+#upload-status.error {
     background-color: rgba(244, 67, 54, 0.1);
     color: #f44336;
     border: 1px solid rgba(244, 67, 54, 0.2);
 }
 
-/* Mobile-first table styles */
-.table-responsive {
-    margin-top: 1rem;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.qys-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    background-color: #1e1e1e;
-}
-
-/* Mobile table layout */
-.qys-table,
-.qys-table thead,
-.qys-table tbody,
-.qys-table th,
-.qys-table td,
-.qys-table tr {
-    display: block;
-}
-
-.qys-table tr {
-    margin-bottom: 1rem;
-    background-color: #2c2c2c;
-    border-radius: 8px;
+/* Error message styling within upload status - EXACT MATCH TO PAYMENTS */
+.error-message {
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    color: #f44336;
     padding: 0.5rem;
-    /* Optional: If you want the entire card centered on the screen */
-    /* margin-left: auto; */
-    /* margin-right: auto; */
-    /* max-width: 300px; /* Adjust as needed for card width */
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    font-size: 0.85rem;
 }
 
-.qys-table td, th {
-    /* Remove position: relative if not explicitly needed for other absolute positioning inside td/th */
-    /* position: relative; */ /* Keep if you need it for data-label positioning */
+/* ===== RECORDS SECTION STYLING (KEEPING EXISTING DESIGN) ===== */
 
-    /* Reset padding for the new centered layout */
-    padding: 0.5rem 0.75rem; /* Top/bottom 0.5rem, left/right 0.75rem */
-
-    min-height: 1rem;
-    border-bottom: 1px solid #333;
-    color: white;
-
-    /* Center the text within the <td> itself */
-    text-align: center; /* This will center the actual value */
-
-    /* Ensure vertical alignment if content takes multiple lines */
-    vertical-align: middle;
+/* Records Section - Styled to complement the form */
+.qys-records-section {
+    margin-top: 40px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 0.2rem;
 }
 
-.qys-table td:last-child {
-    border-bottom: none;
-}
-
-.qys-table td:before {
-    /* Modify how the label behaves */
-    display: block; /* Make the label a block element so the value drops below it */
-    position: static; /* Remove absolute positioning relative to the td */
-    width: 100%; /* Make the label take full width */
-    padding-right: 0; /* Remove specific padding for label */
-    margin-bottom: 0.2rem; /* Add some space between label and value */
-    font-weight: 500;
+.qys-records-section h2 {
     color: #4a90e2;
-
-    /* Center the label text */
-    text-align: center; /* Center the data-label itself */
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-/* Status colors */
-.status-atendido { color: #4CAF50; }
-.status-en_progreso { color: #FFA500; }
-.status-pendiente { color: #f44336; }
 
-.status-letters {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 6px;
-    background-color: #2c2c2c;
-    color: #4a90e2;
+/* Records Container */
+.records-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Record Cards */
+.record-card {
+    background-color: #2A2B2A;
+    border-radius: 10px;
+    padding: 25px;
     border: 1px solid #444;
-    font-weight: 500;
-    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
     margin-bottom: 0.5rem;
 }
 
-/* Tablet breakpoint */
+.record-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: #5a9fe2;
+}
+
+/* Record Header */
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.record-type {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.type-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.type-badge.type-queja {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+
+.type-badge.type-sugerencia {
+    background-color: rgba(74, 144, 226, 0.2);
+    color: #4a90e2;
+    border: 1px solid #4a90e2;
+}
+
+.category-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: rgba(156, 39, 176, 0.2);
+    color: #9c27b0;
+    border: 1px solid #9c27b0;
+}
+
+.record-apartment {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.apartment-label {
+    font-size: 0.875rem;
+    color: #bdc3c7;
+}
+
+.apartment-number {
+    font-weight: 600;
+    color: #fff;
+    background-color: rgba(74, 144, 226, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #4a90e2;
+}
+
+/* Record Body */
+.record-body {
+    margin-bottom: 20px;
+}
+
+.record-description {
+    margin-bottom: 15px;
+}
+
+.record-description p {
+    color: #ecf0f1;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Record Meta */
+.record-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meta-label {
+    font-size: 0.875rem;
+    color: #bdc3c7;
+    font-weight: 500;
+}
+
+.meta-value {
+    font-size: 0.875rem;
+    color: #fff;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.status-pendiente {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.status-badge.status-en_progreso {
+    background-color: rgba(74, 144, 226, 0.2);
+    color: #4a90e2;
+    border: 1px solid #4a90e2;
+}
+
+.status-badge.status-atendido {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+/* Record Attachment */
+.record-attachment {
+    margin-top: 10px;
+}
+
+.attachment-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a90e2;
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    border: 1px solid #4a90e2;
+    border-radius: 6px;
+    background-color: rgba(74, 144, 226, 0.1);
+    transition: all 0.3s ease;
+}
+
+.attachment-link:hover {
+    background-color: rgba(74, 144, 226, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Record Actions (Staff Only) */
+.record-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+}
+
+.status-update {
+    flex: 1;
+}
+
+.status-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #4a90e2;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    padding-right: 30px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: #5a9fe2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.delete-btn {
+    background-color: transparent;
+    border: 1px solid #f44336;
+    color: #f44336;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    min-width: 40px;
+    text-align: center;
+}
+
+.delete-btn:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+    transform: translateY(-1px);
+}
+
+/* No Records State */
+.no-records {
+    text-align: center;
+    padding: 60px 20px;
+    color: #bdc3c7;
+    background-color: #2A2B2A;
+    border-radius: 10px;
+    border: 1px solid #444;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.9rem;
+}
+
+.no-records-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+.no-records h3 {
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.no-records p {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet breakpoint - EXACT MATCH TO PAYMENTS */
 @media (min-width: 768px) {
     .qys-container {
         padding: 1.25rem;
         margin: 40px auto 25px;
-        max-width: 1200px;
     }
 
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
+    .qys-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.25rem;
+    }
 
-    /* Restore table layout */
-    .qys-table {
-        display: table;
+    .form-group {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        font-size: 1rem;
+    }
+
+    .form-group input[type="file"] {
+        font-size: 1rem;
+    }
+
+    .form-group input[type="file"]::-webkit-file-upload-button,
+    .form-group input[type="file"]::file-selector-button {
+        font-size: 1rem;
+    }
+
+    .small {
         font-size: 0.9rem;
     }
 
-    .qys-table thead {
-        display: table-header-group;
+    .error {
+        font-size: 0.9rem;
     }
 
-    .qys-table tbody {
-        display: table-row-group;
+    #upload-status {
+        font-size: 1rem;
+        padding: 1rem;
     }
 
-    .qys-table tr {
-        display: table-row;
-        margin: 0;
-        border-radius: 0;
-        padding: 0;
+    /* Records section tablet styles */
+    .qys-records-section {
+        padding: 0 1.25rem;
     }
 
-    .qys-table th,
-    .qys-table td {
-        display: table-cell;
-        padding: 0.75rem;
-        border-bottom: 1px solid #333;
+    .qys-records-section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
     }
 
-    .qys-table td {
-        min-height: auto;
+    .record-card {
+        padding: 20px;
+        margin-bottom: 0.5rem;
     }
 
-    .qys-table td:before {
-        display: none;
+    .record-header {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 15px;
     }
 
-    .qys-table th {
-        background-color: #2c2c2c;
-        color: #4a90e2;
-        font-weight: 500;
-        text-align: left;
+    .record-meta {
+        flex-direction: row;
+        gap: 20px;
     }
 
-    .submit-btn,
+    .record-actions {
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .status-update {
+        flex: 1;
+    }
+
     .delete-btn {
         width: auto;
-        padding: 0.6rem 1.2rem;
-    }
-
-    .delete-btn {
-        margin-top: 0;
-    }
-
-    .status-letters {
-        width: auto;
-        margin-bottom: 0;
+        min-width: 40px;
     }
 }
 
-/* Desktop breakpoint */
+/* Desktop breakpoint - EXACT MATCH TO PAYMENTS */
 @media (min-width: 1024px) {
     .qys-container {
         padding: 1.5rem;
         margin: 50px auto 30px;
     }
 
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.7rem; }
-
-    .qys-table tr:hover {
-        background-color: #2c2c2c;
+    .qys-container h1 {
+        font-size: 2rem;
     }
 
-    .submit-btn:hover {
+    .form-group {
+        padding: 1.5rem;
+    }
+
+    .form-group button[type="submit"]:hover:not(:disabled) {
+        background-color: #3a80d2;
+        transform: translateY(-1px);
+    }
+
+    .form-group input[type="file"]::-webkit-file-upload-button:hover,
+    .form-group input[type="file"]::file-selector-button:hover {
         background-color: #3a80d2;
     }
 
-    .delete-btn:hover {
-        background-color: #d32f2f;
+    /* Records section desktop styles */
+    .qys-records-section {
+        padding: 0 1.5rem;
     }
 
-    .status-letters:hover {
-        border-color: #4a90e2;
+    .record-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        border-color: #5a9fe2;
     }
+
+    .attachment-link:hover {
+        background-color: rgba(74, 144, 226, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .delete-btn:hover {
+        background-color: rgba(244, 67, 54, 0.1);
+        transform: translateY(-1px);
+    }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 767px) {
+    .qys-records-section {
+        margin-top: 30px;
+        padding: 0 0.2rem;
+    }
+
+    .qys-records-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    .record-card {
+        padding: 20px;
+        margin: 0 0 15px 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .record-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .record-type {
+        width: 100%;
+    }
+
+    .record-apartment {
+        align-self: flex-end;
+    }
+
+    .record-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .meta-item {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .record-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .status-update {
+        width: 100%;
+    }
+
+    .delete-btn {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .no-records {
+        padding: 40px;
+        margin-bottom: 0.7rem;
+    }
+
+    .no-records-icon {
+        font-size: 3rem;
+    }
+
+    .no-records h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+    .qys-container {
+        padding: 0.2rem;
+        margin: 60px auto 20px;
+        max-width: calc(100% - 10px);
+    }
+
+    .qys-container h1 {
+        font-size: 1.4rem;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.75rem;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .small {
+        font-size: 0.8rem;
+    }
+
+    .form-group button[type="submit"] {
+        padding: 0.85rem;
+        font-size: 0.9rem;
+    }
+
+    .qys-records-section {
+        padding: 0 0.2rem;
+    }
+
+    .qys-records-section h2 {
+        font-size: 1.3rem;
+    }
+
+    .record-card {
+        padding: 15px;
+        margin: 0 0 10px 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .type-badge,
+    .category-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+
+    .record-description p {
+        font-size: 0.9rem;
+    }
+
+    .meta-label,
+    .meta-value {
+        font-size: 0.8rem;
+    }
+}
+
+/* Focus and accessibility improvements */
+.form-group input:focus-visible,
+.form-group select:focus-visible,
+.form-group textarea:focus-visible,
+.form-group button[type="submit"]:focus-visible,
+.status-select:focus-visible,
+.delete-btn:focus-visible {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .qys-container,
+    .record-card,
+    .no-records {
+        border-width: 2px;
+    }
+
+    .type-badge,
+    .category-badge,
+    .status-badge {
+        border-width: 2px;
+        font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        border-width: 2px;
+    }
+}
+
+/* Smooth animations */
+.record-card {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading states for individual cards */
+.record-card.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.record-card.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #4a90e2;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Print styles */
+@media print {
+    .qys-container {
+        max-width: none;
+        padding: 0;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .qys-container h1 {
+        color: black !important;
+    }
+
+    /* Hide the form when printing */
+    .qys-container > form {
+        display: none;
+    }
+
+    #upload-status {
+        display: none;
+    }
+
+    .qys-records-section h2 {
+        color: black !important;
+    }
+
+    .record-card {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+        margin-bottom: 0.5rem;
+    }
+
+    .record-actions {
+        display: none;
+    }
+
+    .type-badge,
+    .category-badge,
+    .status-badge {
+        background: #f0f0f0 !important;
+        color: black !important;
+        border: 1px solid #000 !important;
+    }
+
+    .meta-label,
+    .meta-value,
+    .apartment-label,
+    .apartment-number {
+        color: black !important;
+    }
+
+    .record-description p {
+        color: black !important;
+    }
+}
+
+/* Enhanced form validation styling */
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+    border-color: #f44336 !important;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2) !important;
+}
+
+/* Success state for form fields */
+.form-group input.success,
+.form-group select.success,
+.form-group textarea.success {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
 }

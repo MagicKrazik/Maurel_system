@@ -8,85 +8,225 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container qys-container">
+<div class="qys-container">
     <h1>Comunicación</h1>
+    
+    <!-- QYS FORM SECTION - MATCHING PAYMENTS DESIGN -->
+    <form method="post" enctype="multipart/form-data" id="qys-form">
+        {% csrf_token %}
+        
+        <!-- Apartment Number Field -->
+        <div class="form-group">
+            <label for="id_apartment_number">Número de Departamento:</label>
+            <input type="text" 
+                   name="apartment_number" 
+                   id="id_apartment_number"
+                   value="{{ user.apartment_number|default:'' }}"
+                   {% if user.apartment_number %}readonly{% endif %}
+                   required
+                   class="form-control">
+            <small class="small">Número de departamento</small>
+            {% for error in form.apartment_number.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
 
-    <div class="qys-form-section">
-        <h2>Levantar reporte</h2>
-        <form id="qys-form" method="post">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            {% for field in form %}
-            <div class="form-group">
-                {{ field.label_tag }}
-                {{ field }}
-                {{ field.errors }}
-                {% if field.help_text %}
-                <p class="help">{{ field.help_text|safe }}</p>
+        <!-- Type Field -->
+        <div class="form-group">
+            <label for="id_type">Tipo de reporte:</label>
+            <select name="type" 
+                    id="id_type"
+                    required
+                    class="form-control">
+                <option value="">Seleccione un tipo</option>
+                <option value="queja">Queja</option>
+                <option value="sugerencia">Sugerencia</option>
+            </select>
+            <small class="small">Tipo de reporte</small>
+            {% for error in form.type.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Category Field -->
+        <div class="form-group">
+            <label for="id_category">Categoría:</label>
+            <select name="category" 
+                    id="id_category"
+                    required
+                    class="form-control">
+                <option value="">Seleccione una categoría</option>
+                <option value="mantenimiento">Mantenimiento</option>
+                <option value="seguridad">Seguridad</option>
+                <option value="ruido">Ruido</option>
+                <option value="limpieza">Limpieza</option>
+                <option value="estacionamiento">Estacionamiento</option>
+                <option value="otro">Otro</option>
+            </select>
+            <small class="small">Categoría</small>
+            {% for error in form.category.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+            <label for="id_description">Descripción:</label>
+            <textarea name="description" 
+                      id="id_description"
+                      rows="4" 
+                      placeholder="Describa detalladamente su queja o sugerencia"
+                      required
+                      class="form-control"></textarea>
+            <small class="small">Descripción</small>
+            {% for error in form.description.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Attachment Field (Optional) -->
+        <div class="form-group">
+            <label for="id_attachment">Adjunto (opcional):</label>
+            <input type="file" 
+                   name="attachment" 
+                   id="id_attachment"
+                   accept="image/*,.pdf,.doc,.docx"
+                   class="form-control">
+            <small class="small">Adjunto (opcional)</small>
+            {% for error in form.attachment.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            <button type="submit" id="submit-button">Enviar Reporte</button>
+        </div>
+    </form>
+    <div id="upload-status"></div>
+</div>
+
+<!-- QYS RECORDS SECTION - KEEPING EXISTING FUNCTIONALITY -->
+<div class="qys-records-section">
+    <h2>Historial de Comunicaciones</h2>
+    <div class="records-container">
+        {% for qys in all_qys %}
+        <div class="record-card" data-qys-id="{{ qys.id }}">
+            <div class="record-header">
+                <div class="record-type">
+                    <span class="type-badge type-{{ qys.type }}">{{ qys.get_type_display }}</span>
+                    <span class="category-badge">{{ qys.get_category_display }}</span>
+                </div>
+                <div class="record-apartment">
+                    <span class="apartment-label">Depto</span>
+                    <span class="apartment-number">{{ qys.apartment_number }}</span>
+                </div>
+            </div>
+            
+            <div class="record-body">
+                <div class="record-description">
+                    <p>{{ qys.description }}</p>
+                </div>
+                
+                <div class="record-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Estado:</span>
+                        <span class="status-badge status-{{ qys.status }}">{{ qys.get_status_display }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Creado:</span>
+                        <span class="meta-value">{{ qys.created_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% if qys.attended_at %}
+                    <div class="meta-item">
+                        <span class="meta-label">Atendido:</span>
+                        <span class="meta-value">{{ qys.attended_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- FIXED ATTACHMENT DISPLAY -->
+                {% if qys.attachment and qys.attachment.url %}
+                <div class="record-attachment">
+                    <a href="{{ qys.attachment.url }}" target="_blank" class="attachment-link">
+                        📎 Ver adjunto
+                    </a>
+                </div>
+                {% elif qys.attachment %}
+                <!-- Fallback for cases where attachment exists but URL might not be accessible -->
+                <div class="record-attachment">
+                    <span class="attachment-link" style="color: #999; cursor: not-allowed;">
+                        📎 Adjunto no disponible
+                    </span>
+                </div>
                 {% endif %}
             </div>
-            {% endfor %}
-            <button type="submit" class="submit-btn">Enviar</button>
-        </form>
-        <div id="submission-status" class="submission-status"></div>
-    </div>
-
-    <div class="all-submissions">
-        <h2>Todas las Quejas y Sugerencias</h2>
-        <div class="table-responsive">
-            <table class="qys-table">
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Categoría</th>
-                        <th>Apartamento</th>
-                        <th>Descripción</th>
-                        <th>Estado</th>
-                        <th>Fecha de Creación</th>
-                        <th>Fecha de Atención</th>
-                        {% if user.is_staff %}
-                        <th>Acciones</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody id="qys-table-body">
-                    {% for qys in all_qys %}
-                    <tr>
-                        <td data-label="Tipo">{{ qys.get_type_display }}</td>
-                        <td data-label="Categoría">{{ qys.get_category_display }}</td>
-                        <td data-label="Apartamento">{{ qys.apartment_number }}</td>
-                        <td data-label="Descripción">{{ qys.description|truncatewords:20 }}</td>
-                        <td data-label="Estado" class="status-{{ qys.status }}">{{ qys.get_status_display }}</td>
-                        <td data-label="Fecha de Creación">{{ qys.created_at|date:"d/m/Y H:i" }}</td>
-                        <td data-label="Fecha de Atención">{{ qys.attended_at|date:"d/m/Y H:i"|default:"-" }}</td>
-                        {% if user.is_staff %}
-                        <td data-label="Acciones">
-                            <form method="post" action="{% url 'qys' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="qys_id" value="{{ qys.id }}">
-                                <select name="status" class="status-letters" onchange="updateStatus(this)">
-                                    {% for value, label in qys.STATUS_CHOICES %}
-                                    <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                                <input type="hidden" name="update_status" value="1">
-                            </form>
-                            <button class="delete-btn" onclick="deleteQyS({{ qys.id }})">Eliminar</button>
-                        </td>
-                        {% endif %}
-                    </tr>
-                    {% empty %}
-                    <tr id="no-qys-row">
-                        <td colspan="{% if user.is_staff %}8{% else %}7{% endif %}">No hay quejas o sugerencias registradas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            
+            {% if user.is_staff %}
+            <div class="record-actions">
+                <div class="status-update">
+                    <form method="post" action="{% url 'qys' %}" class="status-update-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="qys_id" value="{{ qys.id }}">
+                        <select name="status" class="status-select" onchange="updateStatus(this)">
+                            {% for value, label in qys.STATUS_CHOICES %}
+                            <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="update_status" value="1">
+                    </form>
+                </div>
+                {% if user.is_superuser %}
+                <button class="delete-btn" onclick="deleteQyS({{ qys.id }})" title="Eliminar reporte">
+                    🗑️
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
+        {% empty %}
+        <div class="no-records">
+            <div class="no-records-icon">📝</div>
+            <h3>No hay comunicaciones registradas</h3>
+            <p>Sea el primero en enviar una queja o sugerencia</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/qys.js' %}"></script>
+<!-- JavaScript for status updates and deletion -->
+<script>
+function updateStatus(selectElement) {
+    const form = selectElement.closest('form');
+    if (form) {
+        // Add the submit flag
+        const submitFlag = document.createElement('input');
+        submitFlag.type = 'hidden';
+        submitFlag.name = 'update_status';
+        submitFlag.value = '1';
+        form.appendChild(submitFlag);
+        
+        form.submit();
+    }
+}
+
+function deleteQyS(qysId) {
+    if (confirm('¿Está seguro de que desea eliminar esta queja/sugerencia?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "qys" %}';
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.innerHTML = `
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <input type="hidden" name="qys_id" value="${qysId}">
+            <input type="hidden" name="delete_qys" value="1">
+        `;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

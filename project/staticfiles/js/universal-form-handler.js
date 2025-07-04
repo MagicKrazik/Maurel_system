@@ -39,7 +39,12 @@ class UniversalFormHandler {
                 'amount': 'Monto',
                 'expense_date': 'Fecha del gasto',
                 'expense_concept': 'Concepto del gasto',
-                'proof_of_expense': 'Comprobante del gasto'
+                'proof_of_expense': 'Comprobante del gasto',
+                'apartment_number': 'Número de departamento',
+                'type': 'Tipo de reporte',
+                'category': 'Categoría',
+                'description': 'Descripción',
+                'attachment': 'Adjunto'
             },
             ...options
         };
@@ -116,7 +121,7 @@ class UniversalFormHandler {
 
     clearFieldError(field) {
         if (field.style.borderColor === 'rgb(244, 67, 54)') {
-            field.style.borderColor = '#444';
+            field.style.borderColor = '#555';
         }
         if (this.uploadStatus && this.uploadStatus.classList.contains('error')) {
             this.showStatus('');
@@ -132,7 +137,7 @@ class UniversalFormHandler {
         if (!isValid) {
             field.style.borderColor = '#f44336';
         } else {
-            field.style.borderColor = '#444';
+            field.style.borderColor = '#555';
         }
 
         return isValid;
@@ -152,8 +157,8 @@ class UniversalFormHandler {
             return false;
         }
 
-        // Type validation
-        if (this.options.allowedFileTypes.length > 0 && 
+        // Type validation (skip for QYS form to allow all file types)
+        if (this.formId !== 'qys-form' && this.options.allowedFileTypes.length > 0 && 
             !this.options.allowedFileTypes.includes(file.type)) {
             this.showStatus('Tipo de archivo no válido. Solo se permiten imágenes.', 'error', 5000);
             fileInput.value = '';
@@ -161,7 +166,7 @@ class UniversalFormHandler {
             return false;
         }
 
-        fileInput.style.borderColor = '#444';
+        fileInput.style.borderColor = '#555';
         this.showStatus('');
         return true;
     }
@@ -205,7 +210,7 @@ class UniversalFormHandler {
                 errors.push(`${fieldName} es requerido`);
                 console.log(`  -> INVALID: ${fieldName}`);
             } else {
-                field.style.borderColor = '#444';
+                field.style.borderColor = '#555';
                 console.log(`  -> VALID`);
             }
         });
@@ -261,6 +266,12 @@ class UniversalFormHandler {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             formData.append('csrfmiddlewaretoken', csrfToken);
             
+            // Add form-specific data FIRST
+            if (this.formId === 'qys-form') {
+                formData.append('submit_qys', '1');
+                console.log('Added submit_qys flag for QYS form');
+            }
+            
             // Add all form fields manually to ensure they're included
             const formElements = this.form.querySelectorAll('input, select, textarea');
             formElements.forEach(element => {
@@ -269,6 +280,8 @@ class UniversalFormHandler {
                         if (element.files && element.files.length > 0) {
                             formData.append(element.name, element.files[0]);
                             console.log(`Added file: ${element.name} = ${element.files[0].name}`);
+                        } else if (element.hasAttribute('required')) {
+                            console.log(`Required file field ${element.name} is empty`);
                         }
                     } else if (element.type === 'checkbox') {
                         if (element.checked) {
@@ -281,8 +294,10 @@ class UniversalFormHandler {
                             console.log(`Added radio: ${element.name} = ${element.value}`);
                         }
                     } else {
-                        formData.append(element.name, element.value);
-                        console.log(`Added field: ${element.name} = ${element.value}`);
+                        // For all other input types (text, select, textarea, etc.)
+                        const value = element.value || '';
+                        formData.append(element.name, value);
+                        console.log(`Added field: ${element.name} = "${value}"`);
                     }
                 }
             });
@@ -301,13 +316,30 @@ class UniversalFormHandler {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRFToken': csrfToken
-                }
+                },
+                credentials: 'same-origin'
             });
 
-            console.log('Received response:', response.status);
+            console.log('Received response:', response.status, response.statusText);
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // Try to get error details from response
+                let errorText = '';
+                try {
+                    const responseText = await response.text();
+                    console.error('Response error text:', responseText);
+                    errorText = responseText.substring(0, 200); // First 200 chars
+                } catch (e) {
+                    console.error('Could not read error response:', e);
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const responseText = await response.text();
+                console.error('Non-JSON response:', responseText);
+                throw new Error('Server returned non-JSON response');
             }
 
             const data = await response.json();
@@ -345,6 +377,19 @@ class UniversalFormHandler {
         this.showStatus(message, 'success');
         this.form.reset();
         this.resetFormValidation();
+        
+        // Handle QYS-specific success actions
+        if (this.formId === 'qys-form' && data.new_qys) {
+            this.addNewQysRecord(data.new_qys);
+            
+            // Scroll to records section after a brief delay
+            setTimeout(() => {
+                const recordsSection = document.querySelector('.qys-records-section');
+                if (recordsSection) {
+                    recordsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 1000);
+        }
         
         // Handle redirect with appropriate message
         if (this.options.successRedirect) {
@@ -484,7 +529,7 @@ class UniversalFormHandler {
     resetFormValidation() {
         const fields = this.form.querySelectorAll('input, select, textarea');
         fields.forEach(field => {
-            field.style.borderColor = '#444';
+            field.style.borderColor = '#555';
         });
     }
 
@@ -507,6 +552,111 @@ class UniversalFormHandler {
                 }, clearAfter);
             }
         }
+    }
+
+    addNewQysRecord(newQys) {
+        const recordsContainer = document.querySelector('.records-container');
+        const noRecords = document.querySelector('.no-records');
+        
+        // Remove "no records" message if it exists
+        if (noRecords) {
+            noRecords.remove();
+        }
+        
+        // Create records container if it doesn't exist
+        if (!recordsContainer) {
+            const recordsSection = document.querySelector('.qys-records-section');
+            if (recordsSection) {
+                const newContainer = document.createElement('div');
+                newContainer.className = 'records-container';
+                recordsSection.appendChild(newContainer);
+                this.addNewQysRecord(newQys); // Retry after creating container
+            }
+            return;
+        }
+        
+        // Create new record card
+        const newCard = document.createElement('div');
+        newCard.className = 'record-card';
+        newCard.setAttribute('data-qys-id', newQys.id);
+        
+        // Build the new card HTML
+        newCard.innerHTML = `
+            <div class="record-header">
+                <div class="record-type">
+                    <span class="type-badge type-${newQys.type.toLowerCase()}">${newQys.type}</span>
+                    <span class="category-badge">${newQys.category}</span>
+                </div>
+                <div class="record-apartment">
+                    <span class="apartment-label">Apto</span>
+                    <span class="apartment-number">${newQys.apartment_number}</span>
+                </div>
+            </div>
+            
+            <div class="record-body">
+                <div class="record-description">
+                    <p>${newQys.description}</p>
+                </div>
+                
+                <div class="record-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Estado:</span>
+                        <span class="status-badge status-${newQys.status.toLowerCase()}">${newQys.status}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Creado:</span>
+                        <span class="meta-value">${newQys.created_at}</span>
+                    </div>
+                </div>
+            </div>
+            
+            ${newQys.is_staff ? `
+            <div class="record-actions">
+                <div class="status-update">
+                    <form method="post" action="/qys/" class="status-update-form">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${this.getCookie('csrftoken')}">
+                        <input type="hidden" name="qys_id" value="${newQys.id}">
+                        <select name="status" class="status-select" onchange="updateStatus(this)">
+                            ${newQys.status_choices ? newQys.status_choices.map(([value, label]) => 
+                                `<option value="${value}" ${newQys.status === value ? 'selected' : ''}>${label}</option>`
+                            ).join('') : ''}
+                        </select>
+                        <input type="hidden" name="update_status" value="1">
+                    </form>
+                </div>
+                <button class="delete-btn" onclick="deleteQyS(${newQys.id})" title="Eliminar reporte">
+                    🗑️
+                </button>
+            </div>
+            ` : ''}
+        `;
+        
+        // Add to top of container with animation
+        newCard.style.opacity = '0';
+        newCard.style.transform = 'translateY(-20px)';
+        recordsContainer.insertBefore(newCard, recordsContainer.firstChild);
+        
+        // Animate in
+        setTimeout(() => {
+            newCard.style.transition = 'all 0.3s ease';
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'translateY(0)';
+        }, 100);
+    }
+
+    getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 }
 
@@ -549,13 +699,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('qys-form')) {
         console.log('QyS form found, initializing...');
         new UniversalFormHandler('qys-form', {
-            successRedirect: '/qys/',
+            successRedirect: null, // Don't redirect, stay on same page
+            confirmRedirect: false,
             loadingSteps: [
                 'Validando datos del formulario',
                 'Procesando queja/sugerencia',
+                'Guardando información',
                 'Enviando notificaciones',
                 'Finalizando proceso'
-            ]
+            ],
+            allowedFileTypes: [], // Allow all file types for QYS attachments
+            fieldTranslations: {
+                'apartment_number': 'Número de departamento',
+                'type': 'Tipo de reporte',
+                'category': 'Categoría',
+                'description': 'Descripción',
+                'attachment': 'Adjunto'
+            }
         });
     }
 
