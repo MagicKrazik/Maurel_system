@@ -1296,7 +1296,7 @@ def generate_monthly_balance_report(request):
             pagesize=letter,
             rightMargin=50,
             leftMargin=50,
-            topMargin=120,
+            topMargin=70,
             bottomMargin=80
         )
         
@@ -1385,10 +1385,10 @@ def generate_monthly_balance_report(request):
         elements.append(Paragraph("RESUMEN EJECUTIVO", subtitle_style))
         
         summary_data = [
-            ['CONCEPTO', 'MONTO', 'PORCENTAJE'],
-            ['Total de Ingresos', f"${total_income:,.2f} MXN", "100.0%" if total_income > 0 else "0.0%"],
-            ['Total de Gastos', f"${total_expenses:,.2f} MXN", f"{(total_expenses/total_income*100):,.1f}%" if total_income > 0 else "0.0%"],
-            ['Balance Neto', f"${total_balance:,.2f} MXN", f"{(total_balance/total_income*100):,.1f}%" if total_income > 0 else "0.0%"]
+            ['CONCEPTO', 'MONTO'],
+            ['Total de Ingresos', f"${total_income:,.2f} MXN"],
+            ['Total de Gastos', f"${total_expenses:,.2f} MXN"],
+            ['Balance Neto', f"${total_balance:,.2f} MXN"]
         ]
 
         summary_table = Table(summary_data, colWidths=[200, 150, 100])
@@ -1635,15 +1635,15 @@ def generate_monthly_balance_report(request):
             """Add header and footer to each page"""
             # Header
             canvas.setFillColor(BRAND_BLUE)
-            canvas.rect(0, doc.height + doc.topMargin - 20, doc.width + doc.leftMargin + doc.rightMargin, 40, fill=True, stroke=False)
+            canvas.rect(0, doc.height + doc.topMargin + 40, doc.width + doc.leftMargin + doc.rightMargin, 40, fill=True, stroke=False)
             
             canvas.setFillColor(colors.white)
             canvas.setFont("Helvetica-Bold", 12)
             # Use drawString with calculated center position instead of drawCentredText
-            text = "TORRES DEL MAUREL"
+            text = "TORRES DEL MAUREL - 121"
             text_width = canvas.stringWidth(text, "Helvetica-Bold", 12)
             center_x = (doc.width + doc.leftMargin + doc.rightMargin) / 2 - text_width / 2
-            canvas.drawString(center_x, doc.height + doc.topMargin - 5, text)
+            canvas.drawString(center_x, doc.height + doc.topMargin + 50, text)
             
             # Footer
             canvas.setFillColor(DARK_GRAY)
@@ -1651,7 +1651,7 @@ def generate_monthly_balance_report(request):
             
             canvas.setFillColor(colors.white)
             canvas.setFont("Helvetica", 8)
-            canvas.drawString(doc.leftMargin, 30, f"© {datetime.now().year} Torres del Maurel - Reporte Financiero Oficial")
+            canvas.drawString(doc.leftMargin, 30, f"© {datetime.now().year} Torres del Maurel - Reporte Financiero")
             canvas.drawRightString(doc.width + doc.leftMargin, 30, f"Página 1 de 1")
             canvas.drawRightString(doc.width + doc.leftMargin, 15, f"ID: REPORT-{year}{month:02d}")
 
