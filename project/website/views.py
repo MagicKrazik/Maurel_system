@@ -495,6 +495,8 @@ def pagos(request):
     return render(request, 'pagos.html', {'form': form})
 
 
+# In your views.py, find the QyS section and replace the email sending part with this:
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def qys(request):
@@ -516,18 +518,6 @@ def qys(request):
                 print(f"Form errors: {dict(form.errors)}")
                 print(f"Form non_field_errors: {form.non_field_errors()}")
                 
-                # Debug each field individually
-                for field_name, field in form.fields.items():
-                    field_value = request.POST.get(field_name, 'NOT_PROVIDED')
-                    file_value = request.FILES.get(field_name, 'NO_FILE')
-                    print(f"Field '{field_name}':")
-                    print(f"  - Required: {field.required}")
-                    print(f"  - POST value: '{field_value}'")
-                    print(f"  - FILE value: '{file_value}'")
-                    if field_name in form.errors:
-                        print(f"  - Errors: {form.errors[field_name]}")
-                    print()
-                
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({
                         'success': False, 
@@ -546,10 +536,14 @@ def qys(request):
                     qys.save()
                     print(f"QYS saved with ID: {qys.id}")
 
+                    # COMMENTED OUT EMAIL FUNCTIONALITY
                     # Send notification email
-                    print("Sending notification emails...")
-                    email_sent = send_qys_notification_emails(qys)
-                    print(f"Emails sent: {email_sent}")
+                    # print("Sending notification emails...")
+                    # email_sent = send_qys_notification_emails(qys)
+                    # print(f"Emails sent: {email_sent}")
+                    
+                    # Set email_sent to True to avoid warnings
+                    email_sent = True
                     
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         response_data = {
@@ -568,14 +562,12 @@ def qys(request):
                                 'status_choices': qys.STATUS_CHOICES if request.user.is_staff else None,
                             }
                         }
-                        if not email_sent:
-                            response_data['warning'] = 'El reporte se registró correctamente pero hubo un problema al enviar las notificaciones.'
+                        # REMOVED EMAIL WARNING since we're not sending emails
                         print(f"Returning AJAX response: {response_data}")
                         return JsonResponse(response_data)
                     else:
                         messages.success(request, 'Su queja o sugerencia ha sido enviada exitosamente.')
-                        if not email_sent:
-                            messages.warning(request, 'El reporte se registró correctamente pero hubo un problema al enviar las notificaciones.')
+                        # REMOVED EMAIL WARNING since we're not sending emails
                         return redirect('qys')
                         
                 except Exception as e:
@@ -592,7 +584,7 @@ def qys(request):
                         messages.error(request, f'Error al procesar el reporte: {str(e)}')
                         
         elif 'update_status' in request.POST and request.user.is_staff:
-            # Handle status update
+            # Handle status update (existing code remains the same)
             qys_id = request.POST.get('qys_id')
             new_status = request.POST.get('status')
             
@@ -635,7 +627,7 @@ def qys(request):
             return redirect('qys')
             
         elif 'delete_qys' in request.POST and request.user.is_superuser:
-            # Handle QYS deletion
+            # Handle QYS deletion (existing code remains the same)
             qys_id = request.POST.get('qys_id')
             
             try:
@@ -671,9 +663,6 @@ def qys(request):
         # GET request - show the form
         print("=== QYS DEBUG: GET request ===")
         form = ComplaintSuggestionForm(user=request.user)
-        print(f"Form fields: {list(form.fields.keys())}")
-        for field_name, field in form.fields.items():
-            print(f"Field '{field_name}': required={field.required}, widget={type(field.widget).__name__}")
     
     # Get all QYS records for display
     all_qys = ComplaintSuggestion.objects.all().order_by('-created_at')
@@ -682,7 +671,6 @@ def qys(request):
         'form': form,
         'all_qys': all_qys
     })
-
 
 
 @login_required
