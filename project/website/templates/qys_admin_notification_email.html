@@ -1,21 +1,354 @@
-{% autoescape off %}
-Nueva {{ qys.get_type_display }} Registrada
-
-Detalles de la solicitud:
-- Usuario: {{ qys.user.get_username }} (Departamento: {{ qys.apartment_number }})
-- Tipo: {{ qys.get_type_display }}
-- Categoría: {{ qys.get_category_display }}
-- Fecha: {{ qys.created_at|date:"d/m/Y H:i" }}
-- Estado: {{ qys.get_status_display }}
-
-Descripción:
-{{ qys.description }}
-
-{% if qys.attachment %}
-Se ha adjuntado un archivo a esta {{ qys.get_type_display }}.
-{% endif %}
-
-Este es un correo automático, por favor no responda a esta dirección.
-
-© {% now "Y" %} Torres del Maurel
-{% endautoescape %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nueva {{ qys.get_type_display }} - Torres del Maurel</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style type="text/css">
+        /* Reset styles */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+        }
+        
+        /* Email styles */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #f5f7fa !important;
+            font-family: Arial, sans-serif !important;
+            color: #2a2a2a !important;
+        }
+        
+        .email-container {
+            width: 100% !important;
+            max-width: 600px !important;
+            margin: 0 auto !important;
+            background-color: #ffffff !important;
+        }
+        
+        .header-table {
+            width: 100% !important;
+            background-color: #4a90e2 !important;
+        }
+        
+        .header-cell {
+            padding: 30px 20px !important;
+            text-align: center !important;
+            color: #ffffff !important;
+        }
+        
+        .header-title {
+            font-size: 24px !important;
+            font-weight: bold !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.2 !important;
+        }
+        
+        .header-subtitle {
+            font-size: 16px !important;
+            margin: 8px 0 0 0 !important;
+            padding: 0 !important;
+            line-height: 1.2 !important;
+        }
+        
+        .content-table {
+            width: 100% !important;
+            background-color: #ffffff !important;
+        }
+        
+        .content-cell {
+            padding: 30px 20px !important;
+        }
+        
+        .intro-text {
+            background-color: #f8fafc !important;
+            padding: 20px !important;
+            margin: 0 0 25px 0 !important;
+            border-left: 4px solid #4a90e2 !important;
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+        }
+        
+        .detail-table {
+            width: 100% !important;
+            margin: 0 0 25px 0 !important;
+            border-collapse: collapse !important;
+        }
+        
+        .detail-row {
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        
+        .detail-cell {
+            padding: 15px 10px !important;
+            vertical-align: top !important;
+        }
+        
+        .detail-label {
+            font-weight: bold !important;
+            color: #2d3748 !important;
+            width: 120px !important;
+        }
+        
+        .detail-value {
+            color: #4a5568 !important;
+        }
+        
+        .badge {
+            display: inline-block !important;
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            text-transform: uppercase !important;
+        }
+        
+        .badge-queja {
+            background-color: #fed7d7 !important;
+            color: #c53030 !important;
+        }
+        
+        .badge-sugerencia {
+            background-color: #c6f6d5 !important;
+            color: #22543d !important;
+        }
+        
+        .badge-pendiente {
+            background-color: #faf089 !important;
+            color: #744210 !important;
+        }
+        
+        .description-box {
+            background-color: #f7fafc !important;
+            padding: 20px !important;
+            margin: 20px 0 !important;
+            border: 2px solid #e2e8f0 !important;
+            border-left: 4px solid #4a90e2 !important;
+        }
+        
+        .description-text {
+            margin: 10px 0 0 0 !important;
+            line-height: 1.6 !important;
+            color: #4a5568 !important;
+        }
+        
+        .attachment-box {
+            background-color: #e8f4fd !important;
+            padding: 15px !important;
+            margin: 20px 0 !important;
+            border: 2px solid #4a90e2 !important;
+            border-radius: 4px !important;
+        }
+        
+        .actions-box {
+            background-color: #f7fafc !important;
+            padding: 20px !important;
+            margin: 25px 0 !important;
+            border: 2px solid #e2e8f0 !important;
+        }
+        
+        .actions-title {
+            font-weight: bold !important;
+            color: #2d3748 !important;
+            margin: 0 0 15px 0 !important;
+        }
+        
+        .actions-list {
+            margin: 0 !important;
+            padding: 0 0 0 20px !important;
+        }
+        
+        .actions-list li {
+            margin: 8px 0 !important;
+            color: #4a5568 !important;
+            line-height: 1.5 !important;
+        }
+        
+        .footer-table {
+            width: 100% !important;
+            background-color: #2d3748 !important;
+        }
+        
+        .footer-cell {
+            padding: 25px 20px !important;
+            text-align: center !important;
+            color: #ffffff !important;
+        }
+        
+        .footer-title {
+            font-size: 18px !important;
+            font-weight: bold !important;
+            margin: 0 0 8px 0 !important;
+        }
+        
+        .footer-text {
+            font-size: 14px !important;
+            margin: 0 0 15px 0 !important;
+            opacity: 0.8;
+        }
+        
+        .footer-small {
+            font-size: 12px !important;
+            margin: 0 !important;
+            opacity: 0.7;
+            line-height: 1.4 !important;
+        }
+        
+        /* Mobile styles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+            
+            .header-cell {
+                padding: 20px 15px !important;
+            }
+            
+            .header-title {
+                font-size: 20px !important;
+            }
+            
+            .content-cell {
+                padding: 20px 15px !important;
+            }
+            
+            .detail-label {
+                width: auto !important;
+                display: block !important;
+                padding-bottom: 5px !important;
+            }
+            
+            .detail-value {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" class="email-container" cellpadding="0" cellspacing="0" border="0">
+        <!-- Header -->
+        <tr>
+            <td>
+                <table role="presentation" class="header-table" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="header-cell">
+                            <h1 class="header-title">TORRES DEL MAUREL</h1>
+                            <p class="header-subtitle">Nueva {{ qys.get_type_display }} Registrada</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- Content -->
+        <tr>
+            <td>
+                <table role="presentation" class="content-table" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="content-cell">
+                            <!-- Intro -->
+                            <div class="intro-text">
+                                <strong>Se ha registrado una nueva {{ qys.get_type_display|lower }} en el sistema que requiere su atención.</strong>
+                            </div>
+                            
+                            <!-- Details -->
+                            <table role="presentation" class="detail-table" cellpadding="0" cellspacing="0" border="0">
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">👤 Usuario:</td>
+                                    <td class="detail-cell detail-value">{{ qys.user.get_full_name|default:qys.user.username }}</td>
+                                </tr>
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">🏢 Departamento:</td>
+                                    <td class="detail-cell detail-value">{{ qys.apartment_number }}</td>
+                                </tr>
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">📋 Tipo:</td>
+                                    <td class="detail-cell detail-value">
+                                        <span class="badge badge-{{ qys.type }}">{{ qys.get_type_display }}</span>
+                                    </td>
+                                </tr>
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">🏷️ Categoría:</td>
+                                    <td class="detail-cell detail-value">{{ qys.get_category_display }}</td>
+                                </tr>
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">📅 Fecha:</td>
+                                    <td class="detail-cell detail-value">{{ qys.created_at|date:"d/m/Y H:i" }} hrs</td>
+                                </tr>
+                                <tr class="detail-row">
+                                    <td class="detail-cell detail-label">⚡ Estado:</td>
+                                    <td class="detail-cell detail-value">
+                                        <span class="badge badge-{{ qys.status }}">{{ qys.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Description -->
+                            <div class="description-box">
+                                <strong>📝 Descripción:</strong>
+                                <div class="description-text">{{ qys.description|linebreaks }}</div>
+                            </div>
+                            
+                            <!-- Attachment -->
+                            {% if qys.attachment %}
+                            <div class="attachment-box">
+                                <strong>📎 Archivo Adjunto:</strong> Se ha incluido un archivo con esta {{ qys.get_type_display|lower }}.
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Actions -->
+                            <div class="actions-box">
+                                <div class="actions-title">🔗 Acciones Recomendadas:</div>
+                                <ul class="actions-list">
+                                    <li>Acceda al panel de administración para revisar los detalles completos</li>
+                                    <li>Actualice el estado según el progreso de la atención</li>
+                                    <li>Coordine con el equipo de mantenimiento si es necesario</li>
+                                    <li>Documente cualquier acción tomada para seguimiento futuro</li>
+                                    <li>Notifique al residente sobre el progreso de su solicitud</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- Footer -->
+        <tr>
+            <td>
+                <table role="presentation" class="footer-table" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="footer-cell">
+                            <div class="footer-title">TORRES DEL MAUREL</div>
+                            <div class="footer-text">Sistema de Gestión de Comunicaciones</div>
+                            <div class="footer-small">
+                                © {% now "Y" %} Torres del Maurel - Administración Residencial<br>
+                                Este es un correo automático generado por el sistema<br>
+                                No responda directamente a esta dirección de correo
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -529,34 +529,129 @@ def send_payment_confirmation_emails(payment):
 
 def send_qys_notification_emails(qys):
     """
-    Send QyS notification emails to admin users.
+    Send QyS notification emails to admin users - FIXED VERSION
     """
     try:
+        print(f"DEBUG: Starting QYS email notification for ID: {qys.id}")
+        
         context = {
             'qys': qys,
         }
 
-        # Send notification to admin users
+        # Get admin users
         admin_users = get_user_model().objects.filter(is_superuser=True)
+        print(f"DEBUG: Found {admin_users.count()} admin users")
+        
         if admin_users.exists():
             admin_subject = f"Nueva {qys.get_type_display()} - Departamento {qys.apartment_number}"
-            admin_message = render_to_string('qys_admin_notification_email.html', context)
+            print(f"DEBUG: Email subject: {admin_subject}")
+            
+            # Render email content
+            try:
+                admin_message_html = render_to_string('qys_admin_notification_email.html', context)
+                print("DEBUG: Email template rendered successfully")
+            except Exception as e:
+                print(f"ERROR: Failed to render email template: {str(e)}")
+                # Fallback to simple text message
+                admin_message_html = f"""
+                <html>
+                <body>
+                <h2>Nueva {qys.get_type_display()} Registrada</h2>
+                
+                <p><strong>Detalles:</strong></p>
+                <ul>
+                    <li><strong>Usuario:</strong> {qys.user.get_username()} (Departamento: {qys.apartment_number})</li>
+                    <li><strong>Tipo:</strong> {qys.get_type_display()}</li>
+                    <li><strong>Categoría:</strong> {qys.get_category_display()}</li>
+                    <li><strong>Fecha:</strong> {qys.created_at.strftime('%d/%m/%Y %H:%M')}</li>
+                    <li><strong>Estado:</strong> {qys.get_status_display()}</li>
+                </ul>
+                
+                <p><strong>Descripción:</strong></p>
+                <p>{qys.description}</p>
+                
+                {'<p><strong>Se ha adjuntado un archivo.</strong></p>' if qys.attachment else '<p>Sin archivos adjuntos.</p>'}
+                
+                <p>Este es un correo automático de Torres del Maurel.</p>
+                </body>
+                </html>
+                """
             
             admin_emails = list(admin_users.values_list('email', flat=True))
+            print(f"DEBUG: Admin emails: {admin_emails}")
             
-            admin_email = EmailMessage(
+            # FIXED: Use EmailMessage with proper HTML content type
+            from django.core.mail import EmailMultiAlternatives
+            
+            # Create plain text version as fallback
+            plain_text_message = f"""
+Nueva {qys.get_type_display()} Registrada
+
+Detalles:
+- Usuario: {qys.user.get_username()} (Departamento: {qys.apartment_number})
+- Tipo: {qys.get_type_display()}
+- Categoría: {qys.get_category_display()}
+- Fecha: {qys.created_at.strftime('%d/%m/%Y %H:%M')}
+- Estado: {qys.get_status_display()}
+
+Descripción:
+{qys.description}
+
+{'Se ha adjuntado un archivo.' if qys.attachment else 'Sin archivos adjuntos.'}
+
+Este es un correo automático de Torres del Maurel.
+            """
+            
+            # Create email message with both text and HTML versions
+            admin_email = EmailMultiAlternatives(
                 subject=admin_subject,
-                body=admin_message,
+                body=plain_text_message,  # Plain text version
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=admin_emails
             )
             
+            # Attach HTML version
+            admin_email.attach_alternative(admin_message_html, "text/html")
+            
+            # Add attachment if exists
             if qys.attachment:
-                admin_email.attach_file(qys.attachment.path)
+                try:
+                    if os.path.exists(qys.attachment.path):
+                        admin_email.attach_file(qys.attachment.path)
+                        print(f"DEBUG: Attachment added: {qys.attachment.name}")
+                    else:
+                        print(f"WARNING: Attachment file does not exist: {qys.attachment.path}")
+                except Exception as e:
+                    print(f"ERROR: Failed to attach file: {str(e)}")
             
-            admin_email.send(fail_silently=False)
+            # Send email
+            try:
+                result = admin_email.send(fail_silently=False)
+                print(f"DEBUG: Email send result: {result}")
+                
+                if result == 1:
+                    print("SUCCESS: QYS notification email sent successfully")
+                    return True
+                else:
+                    print("ERROR: Email send returned 0 (failed)")
+                    return False
+                    
+            except Exception as e:
+                print(f"ERROR: Failed to send email: {str(e)}")
+                # Check specific error types
+                if "authentication" in str(e).lower():
+                    print("ERROR: Email authentication failed - check EMAIL_HOST_USER and EMAIL_HOST_PASSWORD")
+                elif "connection" in str(e).lower():
+                    print("ERROR: Email connection failed - check EMAIL_HOST and EMAIL_PORT")
+                elif "timeout" in str(e).lower():
+                    print("ERROR: Email timeout - check EMAIL_TIMEOUT setting")
+                return False
+        else:
+            print("WARNING: No admin users found to send notification")
+            return True  # Not really an error if no admins exist
             
-        return True
     except Exception as e:
-        print(f"Error sending QyS notification emails: {str(e)}")
+        print(f"CRITICAL ERROR in QYS email notification: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return False
