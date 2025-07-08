@@ -22,7 +22,7 @@ h1 {
 }
 
 h2 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: #4a90e2;
 }
 
@@ -43,7 +43,7 @@ h2 {
 
 .filter-controls label {
     color: #ffffff;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     margin-bottom: 0.25rem;
 }
 
@@ -55,7 +55,7 @@ h2 {
     border: 1px solid #444;
     background-color: #2c2c2c;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.3rem;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -188,7 +188,7 @@ h2 {
     text-decoration: none;
     text-align: center;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 1.3rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -204,7 +204,7 @@ h2 {
     color: #888;
     text-align: center;
     padding: 1rem;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
 }
 
 /* Tablet breakpoint */

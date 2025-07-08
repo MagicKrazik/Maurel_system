@@ -39,7 +39,7 @@
 .form-group input[type="number"],
 .form-group input[type="date"],
 .form-group textarea {
-    width: 96%;
+    width: 95%;
     padding: 0.75rem;
     background-color: #2a2a2a;
     color: #ffffff;
@@ -96,7 +96,7 @@
 }
 
 .small {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: #1E90FF;
     margin-top: 0.9rem;
     display: block;
@@ -170,6 +170,6 @@
     .form-group select,
     .form-group textarea,
     .form-group button[type="submit"] {
-        font-size: 0.9rem;
+        font-size: 1.3rem;
     }
 }

@@ -33,7 +33,7 @@
     display: block;
     color: #ffffff;
     margin-bottom: 0.4rem;
-    font-size: 0.95rem;
+    font-size: 1.3rem;
     font-weight: 500;
 }
 
@@ -73,7 +73,7 @@
     color: #ffffff;
     border: 1px solid #444;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     margin-top: 0.25rem;
     box-sizing: border-box;
     cursor: pointer;
@@ -153,7 +153,7 @@
 
 /* Helper text and errors - EXACT MATCH TO PAYMENTS */
 .small {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: #1E90FF;
     margin-top: 0.5rem;
     display: block;
@@ -268,7 +268,7 @@
 .type-badge {
     padding: 6px 12px;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -289,7 +289,7 @@
 .category-badge {
     padding: 6px 12px;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 500;
     background-color: rgba(156, 39, 176, 0.2);
     color: #9c27b0;
@@ -329,7 +329,7 @@
     color: #ecf0f1;
     line-height: 1.6;
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 /* Record Meta */
@@ -361,7 +361,7 @@
 .status-badge {
     padding: 4px 8px;
     border-radius: 12px;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -429,7 +429,7 @@
     border-radius: 6px;
     background-color: #1a1a1a;
     color: #fff;
-    font-size: 0.875rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -514,7 +514,7 @@
     }
 
     .form-group label {
-        font-size: 1rem;
+        font-size: 1.3rem;
     }
 
     .form-group input[type="file"] {
@@ -527,7 +527,7 @@
     }
 
     .small {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .error {
@@ -710,23 +710,23 @@
     }
 
     .form-group label {
-        font-size: 0.9rem;
+        font-size: 1.3rem;
     }
 
     .form-group input,
     .form-group select,
     .form-group textarea {
         padding: 0.75rem;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 18px; /* Prevent zoom on iOS */
     }
 
     .small {
-        font-size: 0.8rem;
+        font-size: 1.1rem;
     }
 
     .form-group button[type="submit"] {
         padding: 0.85rem;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .qys-records-section {
@@ -734,7 +734,7 @@
     }
 
     .qys-records-section h2 {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
     }
 
     .record-card {
@@ -745,17 +745,17 @@
 
     .type-badge,
     .category-badge {
-        font-size: 0.7rem;
+        font-size: 1rem;
         padding: 4px 8px;
     }
 
     .record-description p {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .meta-label,
     .meta-value {
-        font-size: 0.8rem;
+        font-size: 1rem;
     }
 }
 

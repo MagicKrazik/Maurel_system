@@ -9,6 +9,7 @@
     border-radius: 15px;
     color: #ffffff;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    font-size: 1.2rem;
 }
 
 h1, h2, h3 {
@@ -30,7 +31,7 @@ h2 {
 }
 
 h3 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
 .announcements-section {
@@ -65,13 +66,13 @@ h3 {
     display: block;
     color: #ffffff;
     margin-bottom: 0.3rem;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 500;
 }
 
 .announcements-section form input[type="text"],
 .announcements-section form textarea {
-    width: 100%;
+    width: 97%;
     padding: 0.5rem;
     background-color: #3a3a3a;
     border: 1px solid #4a4a4a;
@@ -99,7 +100,7 @@ h3 {
     color: #ffffff;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -264,7 +265,7 @@ button.update-btn {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9rem;
+    font-size: 1.3rem;
     font-weight: 500;
 }
 
@@ -376,19 +377,29 @@ button.update-btn:hover {
     display: block;
     color: #ffffff;
     margin-bottom: 0.3rem;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 500;
 }
 
-.report-section select,
 .report-section input[type="number"] {
+    width: 95%;
+    padding: 0.5rem;
+    background-color: #3a3a3a;
+    border: 1px solid #4a4a4a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    transition: border-color 0.3s ease;
+}
+
+.report-section select {
     width: 100%;
     padding: 0.5rem;
     background-color: #3a3a3a;
     border: 1px solid #4a4a4a;
     color: #ffffff;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     transition: border-color 0.3s ease;
 }
 
@@ -406,7 +417,7 @@ button.update-btn:hover {
     color: #ffffff;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -610,7 +621,7 @@ button.update-btn:hover {
 
 .filter-controls label {
     color: #ffffff;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 500;
     margin-bottom: 0.3rem;
 }
@@ -623,7 +634,7 @@ button.update-btn:hover {
     border: 1px solid #4a4a4a;
     background-color: #3a3a3a;
     color: #ffffff;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     -webkit-appearance: none;
     appearance: none;
     transition: border-color 0.3s ease;
@@ -752,7 +763,7 @@ button.update-btn:hover {
 }
 
 .stat-label {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     color: #ffffff;
 }
 
@@ -783,7 +794,7 @@ button.update-btn:hover {
     display: block;
     color: #ffffff;
     margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 500;
 }
 
@@ -837,7 +848,7 @@ button.update-btn:hover {
     font-weight: 600;
     cursor: pointer;
     border: none;
-    font-size: 0.9rem;
+    font-size: 1.3rem;
     transition: all 0.3s ease;
     text-align: center;
     display: inline-block;

@@ -31,7 +31,7 @@
     display: block;
     color: #ffffff;
     margin-bottom: 0.4rem;
-    font-size: 0.95rem;
+    font-size: 1.3rem;
     font-weight: 500;
 }
 
@@ -116,7 +116,7 @@
     color: #ffffff;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -144,7 +144,7 @@
 
 /* Helper text and errors */
 .small {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: #1E90FF;
     margin-top: 0.5rem;
     display: block;
@@ -291,7 +291,7 @@
     }
 
     .form-group label {
-        font-size: 1rem;
+        font-size: 1.3rem;
     }
 
     .form-group input[type="file"] {
@@ -304,7 +304,7 @@
     }
 
     .small {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .error {
