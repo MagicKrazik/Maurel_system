@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Torres del Maurel - Dashboard{% endblock %}
 
@@ -37,31 +38,31 @@
         <div class="fees-grid">
             <div class="fee-item">
                 <span>Gas:</span>
-                <span>${{ current_fees.gas_fee }}</span>
+                <span>${{ current_fees.gas_fee|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item">
                 <span>Mantenimiento:</span>
-                <span>${{ current_fees.maintenance_fee }}</span>
+                <span>${{ current_fees.maintenance_fee|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item">
                 <span>Estacionamiento:</span>
-                <span>${{ current_fees.parking_fee }}</span>
+                <span>${{ current_fees.parking_fee|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item">
                 <span>Extra:</span>
-                <span>${{ current_fees.extra_fee }}</span>
+                <span>${{ current_fees.extra_fee|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item">
                 <span>Saldo anterior:</span>
-                <span>${{ current_fees.past_due }}</span>
+                <span>${{ current_fees.past_due|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item total">
                 <span>Total a pagar:</span>
-                <span>${{ current_fees.total_fee }}</span>
+                <span>${{ current_fees.total_fee|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item">
                 <span>Monto pagado:</span>
-                <span>${{ current_fees.paid_amount }}</span>
+                <span>${{ current_fees.paid_amount|floatformat:2|intcomma }}</span>
             </div>
             <div class="fee-item status">
                 <span>Estado:</span>
@@ -72,7 +73,7 @@
             <div class="fee-item account-status">
                 <span>Estado de cuenta actual:</span>
                 <span class="{% if current_fees.remaining_amount > 0 %}negative{% else %}positive{% endif %}">
-                    ${{ current_fees.remaining_amount }}
+                    ${{ current_fees.remaining_amount|floatformat:2|intcomma }}
                 </span>
             </div>
         </div>
@@ -86,7 +87,7 @@
             {% for debtor in debtors %}
             <div class="debtor-card">
                 <h3>Departamento {{ debtor.apartment_number }}</h3>
-                <p>Pago pendiente: <span class="debtor-amount">${{ debtor.monthly_fees.last.remaining_amount|default:0 }}</span></p>
+                <p>Pago pendiente: <span class="debtor-amount">${{ debtor.monthly_fees.last.remaining_amount|default:0|floatformat:2|intcomma }}</span></p>
             </div>
             {% endfor %}
         </div>
@@ -147,7 +148,7 @@
                 Ingresos {{ selected_month|date:"F" }} {{ selected_year }}
                 {% endif %}
             </h3>
-            <div class="amount">${{ period_income_total|floatformat:2 }}</div>
+            <div class="amount">${{ period_income_total|floatformat:2|intcomma }}</div>
         </div>
         <div class="overview-card expenses-card">
             <h3>
@@ -157,7 +158,7 @@
                 Gastos {{ selected_month|date:"F" }} {{ selected_year }}
                 {% endif %}
             </h3>
-            <div class="amount">${{ period_expenses_total|floatformat:2 }}</div>
+            <div class="amount">${{ period_expenses_total|floatformat:2|intcomma }}</div>
         </div>
         <div class="overview-card balance-card">
             <h3>
@@ -168,7 +169,7 @@
                 {% endif %}
             </h3>
             <div class="amount {% if period_balance >= 0 %}positive{% else %}negative{% endif %}">
-                ${{ period_balance|floatformat:2 }}
+                ${{ period_balance|floatformat:2|intcomma }}
             </div>
         </div>
     </div>
