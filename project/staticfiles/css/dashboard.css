@@ -661,3 +661,16 @@ p {
     background-color: #4a4a4a;
     margin: 0.5rem 0;
 }
+
+/* Fix line breaks in dashboard announcements */
+.announcements-list .announcement-item p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+
+/* Don't affect meta information */
+.announcements-list .announcement-item p:last-child {
+    white-space: normal;
+}

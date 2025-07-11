@@ -527,6 +527,10 @@ button.update-btn:hover {
     min-height: 100px;
 }
 
+.announcements-list textarea {
+    min-height: 100px;
+}
+
 .announcements-list {
     list-style: none;
     padding: 0;
@@ -1037,4 +1041,17 @@ button.update-btn:hover {
     .preview-actions {
         justify-content: flex-end;
     }
+}
+
+/* Fix line breaks in admin panel announcements */
+.announcement-content p,
+.announcements-section li p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+
+/* Don't affect meta information */
+.announcement-meta {
+    white-space: normal !important;
 }
