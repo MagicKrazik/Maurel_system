@@ -144,43 +144,38 @@
                     {% endif %}
                 </div>
                 
-                <!-- FIXED ATTACHMENT DISPLAY -->
-                {% if qys.attachment and qys.attachment.url %}
-                <div class="record-attachment">
-                    <a href="{{ qys.attachment.url }}" target="_blank" class="attachment-link">
-                        📎 Ver adjunto
-                    </a>
-                </div>
-                {% elif qys.attachment %}
-                <!-- Fallback for cases where attachment exists but URL might not be accessible -->
-                <div class="record-attachment">
-                    <span class="attachment-link" style="color: #999; cursor: not-allowed;">
-                        📎 Adjunto no disponible
-                    </span>
-                </div>
-                {% endif %}
+                {% if user.is_staff %}
+                    <div class="record-attachment">
+                        <a href="{% url 'generate_qys_report' qys.id %}" 
+                        target="_blank" 
+                        class="attachment-link report-link">
+                            📄 Ver reporte PDF
+                        </a>
+                    </div>
+                    {% endif %}
             </div>
             
             {% if user.is_staff %}
-            <div class="record-actions">
-                <div class="status-update">
-                    <form method="post" action="{% url 'qys' %}" class="status-update-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="qys_id" value="{{ qys.id }}">
-                        <select name="status" class="status-select" onchange="updateStatus(this)">
-                            {% for value, label in qys.STATUS_CHOICES %}
-                            <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                        <input type="hidden" name="update_status" value="1">
-                    </form>
+                <div class="record-actions">
+                    <div class="status-update">
+                        <form method="post" action="{% url 'qys' %}" class="status-update-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="qys_id" value="{{ qys.id }}">
+                            <select name="status" class="status-select" onchange="updateStatus(this)">
+                                {% for value, label in qys.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if qys.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" name="update_status" value="1">
+                        </form>
+                    </div>
+                    
+                    {% if user.is_superuser %}
+                    <button class="delete-btn" onclick="deleteQyS({{ qys.id }})" title="Eliminar reporte">
+                        🗑️
+                    </button>
+                    {% endif %}
                 </div>
-                {% if user.is_superuser %}
-                <button class="delete-btn" onclick="deleteQyS({{ qys.id }})" title="Eliminar reporte">
-                    🗑️
-                </button>
-                {% endif %}
-            </div>
             {% endif %}
         </div>
         {% empty %}

@@ -55,7 +55,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
 from django.urls import reverse
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+from .utils import generate_qys_report
 
 
 from calendar import month_name
@@ -1696,6 +1697,66 @@ class CustomPasswordResetForm(PasswordResetForm):
             print(f"Error sending password reset email: {str(e)}")
             print(f"Context: {context}")
             raise  # Re-raise the exception after logging
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def generate_qys_report_view(request, qys_id):
+    """
+    Generate and download QYS report - Staff only access
+    """
+    try:
+        # Get the QYS record
+        qys = get_object_or_404(ComplaintSuggestion, id=qys_id)
+        
+        # Generate filename with QYS details
+        qys_type = qys.get_type_display().replace(' ', '_')
+        qys_category = qys.get_category_display().replace(' ', '_')
+        created_date = qys.created_at.strftime('%d-%m-%Y')
+        
+        # Create a safe filename
+        filename = f"QYS_{qys_type}_{qys_category}_Apto{qys.apartment_number}_{created_date}_{qys.id}.pdf"
+        
+        # Generate the PDF report
+        print(f"Generating QYS report: {filename}")
+        report_path = generate_qys_report(qys, filename)
+        print(f"QYS report generated: {report_path}")
+        
+        # Serve the PDF file
+        full_path = os.path.join(settings.MEDIA_ROOT, report_path)
+        
+        if not os.path.exists(full_path):
+            logger.error(f"Generated QYS report file not found: {full_path}")
+            messages.error(request, 'Error al generar el reporte QYS.')
+            return redirect('qys')
+        
+        # Read the file and create response
+        with open(full_path, 'rb') as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+            response['Content-Disposition'] = f'inline; filename="{filename}"'
+            
+        # Optional: Clean up the temporary file
+        # os.remove(full_path)  # Uncomment if you want to delete after serving
+        
+        logger.info(f"QYS report downloaded: {filename} by user {request.user.username}")
+        return response
+        
+    except ComplaintSuggestion.DoesNotExist:
+        logger.warning(f"QYS report requested for non-existent ID: {qys_id}")
+        raise Http404("Reporte QYS no encontrado")
+        
+    except Exception as e:
+        logger.error(f"Error generating QYS report for ID {qys_id}: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': f'Error al generar el reporte: {str(e)}'
+            })
+        
+        messages.error(request, 'Error al generar el reporte QYS. Por favor, inténtelo de nuevo.')
+        return redirect('qys')
+
+
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm

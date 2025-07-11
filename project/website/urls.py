@@ -13,6 +13,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('pagos/', views.pagos, name='pagos'),
     path('qys/', views.qys, name='qys'),
+    path('qys/report/<int:qys_id>/', views.generate_qys_report_view, name='generate_qys_report'),
     path('panel/', views.panel, name='panel'),
     path('initial-profile-update/', views.initial_profile_update, name='initial_profile_update'),
     path('profile/', views.profile, name='profile'),
