@@ -537,15 +537,39 @@ def qys(request):
                     qys.save()
                     print(f"QYS saved with ID: {qys.id}")
 
-                    # COMMENTED OUT EMAIL FUNCTIONALITY
-                    # Send notification email
-                    # print("Sending notification emails...")
-                    # email_sent = send_qys_notification_emails(qys)
-                    # print(f"Emails sent: {email_sent}")
+                    # Generate PDF report (following payment/expense pattern)
+                    try:
+                        qys_type = qys.get_type_display().replace(' ', '_')
+                        qys_category = qys.get_category_display().replace(' ', '_')
+                        created_date = qys.created_at.strftime('%d-%m-%Y')
+                        report_filename = f"QYS_{qys_type}_{qys_category}_Apto{qys.apartment_number}_{created_date}_{qys.id}.pdf"
+                        
+                        print(f"Generating QYS PDF: {report_filename}")
+                        report_path = generate_qys_report(qys, report_filename)
+                        print(f"QYS PDF generated: {report_path}")
+                        
+                        # Create a temporary field to store the report path (following payment/expense pattern)
+                        qys.report_file_path = report_path
+                        pdf_generated = True
+                    except Exception as pdf_error:
+                        print(f"ERROR: Failed to generate PDF: {str(pdf_error)}")
+                        qys.report_file_path = None
+                        pdf_generated = False
+
+                    # Send notification email with PDF attachment (RE-ENABLED with better error handling)
+                    print("Attempting to send QYS notification emails...")
+                    email_sent = False
+                    email_error = None
                     
-                    # Set email_sent to True to avoid warnings
-                    email_sent = True
+                    try:
+                        email_sent = send_qys_notification_emails(qys)
+                        print(f"QYS Emails sent: {email_sent}")
+                    except Exception as email_exception:
+                        email_error = str(email_exception)
+                        print(f"EMAIL ERROR: {email_error}")
+                        email_sent = False
                     
+                    # Prepare response messages
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         response_data = {
                             'success': True,
@@ -563,12 +587,36 @@ def qys(request):
                                 'status_choices': qys.STATUS_CHOICES if request.user.is_staff else None,
                             }
                         }
-                        # REMOVED EMAIL WARNING since we're not sending emails
+                        
+                        # Add warnings for email/PDF issues
+                        warnings = []
+                        if not pdf_generated:
+                            warnings.append('No se pudo generar el reporte PDF.')
+                        if not email_sent:
+                            if email_error:
+                                warnings.append(f'No se pudieron enviar los correos de notificación: {email_error}')
+                            else:
+                                warnings.append('No se pudieron enviar los correos de notificación.')
+                        
+                        if warnings:
+                            response_data['warning'] = ' '.join(warnings)
+                            
                         print(f"Returning AJAX response: {response_data}")
                         return JsonResponse(response_data)
                     else:
                         messages.success(request, 'Su queja o sugerencia ha sido enviada exitosamente.')
-                        # REMOVED EMAIL WARNING since we're not sending emails
+                        
+                        # Add warnings for email/PDF issues
+                        if not pdf_generated:
+                            messages.warning(request, 'El reporte se registró correctamente pero no se pudo generar el PDF.')
+                        if not email_sent:
+                            if email_error and 'authentication' in email_error.lower():
+                                messages.warning(request, 'El reporte se registró correctamente pero no se pudieron enviar los correos (problema de autenticación).')
+                            elif email_error and 'connection' in email_error.lower():
+                                messages.warning(request, 'El reporte se registró correctamente pero no se pudieron enviar los correos (problema de conexión).')
+                            else:
+                                messages.warning(request, 'El reporte se registró correctamente pero hubo un problema al enviar los correos de notificación.')
+                        
                         return redirect('qys')
                         
                 except Exception as e:
@@ -672,7 +720,6 @@ def qys(request):
         'form': form,
         'all_qys': all_qys
     })
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -1700,14 +1747,19 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
 def generate_qys_report_view(request, qys_id):
     """
-    Generate and download QYS report - Staff only access
+    Generate and download QYS report - Users can access their own reports, Staff can access all
     """
     try:
         # Get the QYS record
         qys = get_object_or_404(ComplaintSuggestion, id=qys_id)
+        
+        # Permission check: Staff can see all, regular users can only see their own
+        if not request.user.is_staff and qys.user != request.user:
+            logger.warning(f"User {request.user.username} attempted to access QYS report {qys_id} belonging to {qys.user.username}")
+            messages.error(request, 'No tiene permisos para acceder a este reporte.')
+            return redirect('qys')
         
         # Generate filename with QYS details
         qys_type = qys.get_type_display().replace(' ', '_')
@@ -1757,7 +1809,6 @@ def generate_qys_report_view(request, qys_id):
         return redirect('qys')
 
 
-
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
     template_name = 'password_reset_form.html'
@@ -1788,4 +1839,4 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
 
 
-# === CODE END ===     
+# === CODE END ===

@@ -144,7 +144,7 @@
                     {% endif %}
                 </div>
                 
-                {% if user.is_staff %}
+                {% if user.is_staff or qys.user == user %}
                     <div class="record-attachment">
                         <a href="{% url 'generate_qys_report' qys.id %}" 
                         target="_blank" 
@@ -152,7 +152,7 @@
                             📄 Ver reporte PDF
                         </a>
                     </div>
-                    {% endif %}
+                {% endif %}
             </div>
             
             {% if user.is_staff %}

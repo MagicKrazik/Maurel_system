@@ -527,136 +527,6 @@ def send_payment_confirmation_emails(payment):
         return False
 
 
-def send_qys_notification_emails(qys):
-    """
-    Send QyS notification emails to admin users - FIXED VERSION
-    """
-    try:
-        print(f"DEBUG: Starting QYS email notification for ID: {qys.id}")
-        
-        context = {
-            'qys': qys,
-        }
-
-        # Get admin users
-        admin_users = get_user_model().objects.filter(is_superuser=True)
-        print(f"DEBUG: Found {admin_users.count()} admin users")
-        
-        if admin_users.exists():
-            admin_subject = f"Nueva {qys.get_type_display()} - Departamento {qys.apartment_number}"
-            print(f"DEBUG: Email subject: {admin_subject}")
-            
-            # Render email content
-            try:
-                admin_message_html = render_to_string('qys_admin_notification_email.html', context)
-                print("DEBUG: Email template rendered successfully")
-            except Exception as e:
-                print(f"ERROR: Failed to render email template: {str(e)}")
-                # Fallback to simple text message
-                admin_message_html = f"""
-                <html>
-                <body>
-                <h2>Nueva {qys.get_type_display()} Registrada</h2>
-                
-                <p><strong>Detalles:</strong></p>
-                <ul>
-                    <li><strong>Usuario:</strong> {qys.user.get_username()} (Departamento: {qys.apartment_number})</li>
-                    <li><strong>Tipo:</strong> {qys.get_type_display()}</li>
-                    <li><strong>Categoría:</strong> {qys.get_category_display()}</li>
-                    <li><strong>Fecha:</strong> {qys.created_at.strftime('%d/%m/%Y %H:%M')}</li>
-                    <li><strong>Estado:</strong> {qys.get_status_display()}</li>
-                </ul>
-                
-                <p><strong>Descripción:</strong></p>
-                <p>{qys.description}</p>
-                
-                {'<p><strong>Se ha adjuntado un archivo.</strong></p>' if qys.attachment else '<p>Sin archivos adjuntos.</p>'}
-                
-                <p>Este es un correo automático de Torres del Maurel.</p>
-                </body>
-                </html>
-                """
-            
-            admin_emails = list(admin_users.values_list('email', flat=True))
-            print(f"DEBUG: Admin emails: {admin_emails}")
-            
-            # FIXED: Use EmailMessage with proper HTML content type
-            from django.core.mail import EmailMultiAlternatives
-            
-            # Create plain text version as fallback
-            plain_text_message = f"""
-Nueva {qys.get_type_display()} Registrada
-
-Detalles:
-- Usuario: {qys.user.get_username()} (Departamento: {qys.apartment_number})
-- Tipo: {qys.get_type_display()}
-- Categoría: {qys.get_category_display()}
-- Fecha: {qys.created_at.strftime('%d/%m/%Y %H:%M')}
-- Estado: {qys.get_status_display()}
-
-Descripción:
-{qys.description}
-
-{'Se ha adjuntado un archivo.' if qys.attachment else 'Sin archivos adjuntos.'}
-
-Este es un correo automático de Torres del Maurel.
-            """
-            
-            # Create email message with both text and HTML versions
-            admin_email = EmailMultiAlternatives(
-                subject=admin_subject,
-                body=plain_text_message,  # Plain text version
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=admin_emails
-            )
-            
-            # Attach HTML version
-            admin_email.attach_alternative(admin_message_html, "text/html")
-            
-            # Add attachment if exists
-            if qys.attachment:
-                try:
-                    if os.path.exists(qys.attachment.path):
-                        admin_email.attach_file(qys.attachment.path)
-                        print(f"DEBUG: Attachment added: {qys.attachment.name}")
-                    else:
-                        print(f"WARNING: Attachment file does not exist: {qys.attachment.path}")
-                except Exception as e:
-                    print(f"ERROR: Failed to attach file: {str(e)}")
-            
-            # Send email
-            try:
-                result = admin_email.send(fail_silently=False)
-                print(f"DEBUG: Email send result: {result}")
-                
-                if result == 1:
-                    print("SUCCESS: QYS notification email sent successfully")
-                    return True
-                else:
-                    print("ERROR: Email send returned 0 (failed)")
-                    return False
-                    
-            except Exception as e:
-                print(f"ERROR: Failed to send email: {str(e)}")
-                # Check specific error types
-                if "authentication" in str(e).lower():
-                    print("ERROR: Email authentication failed - check EMAIL_HOST_USER and EMAIL_HOST_PASSWORD")
-                elif "connection" in str(e).lower():
-                    print("ERROR: Email connection failed - check EMAIL_HOST and EMAIL_PORT")
-                elif "timeout" in str(e).lower():
-                    print("ERROR: Email timeout - check EMAIL_TIMEOUT setting")
-                return False
-        else:
-            print("WARNING: No admin users found to send notification")
-            return True  # Not really an error if no admins exist
-            
-    except Exception as e:
-        print(f"CRITICAL ERROR in QYS email notification: {str(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        return False
-    
-
 # Add this function to your utils.py file, right after the generate_expense_report function
 
 def generate_qys_report(qys, filename):
@@ -929,3 +799,252 @@ def generate_qys_report(qys, filename):
     
     c.save()
     return os.path.join('documents', filename)
+
+
+def send_qys_notification_emails(qys):
+    """
+    Send QyS notification emails to admin users with PDF report attached - PYTHONANYWHERE COMPATIBLE VERSION
+    Following the same pattern as payment and expense reports with enhanced error handling
+    """
+    try:
+        print(f"DEBUG: Starting QYS email notification for ID: {qys.id}")
+        
+        # Check if email is properly configured
+        if not hasattr(settings, 'EMAIL_HOST') or not settings.EMAIL_HOST:
+            print("WARNING: Email not configured - EMAIL_HOST missing")
+            return False
+        
+        if not hasattr(settings, 'DEFAULT_FROM_EMAIL') or not settings.DEFAULT_FROM_EMAIL:
+            print("WARNING: Email not configured - DEFAULT_FROM_EMAIL missing")
+            return False
+        
+        context = {
+            'qys': qys,
+        }
+
+        # Generate the PDF report if it doesn't exist yet
+        if not hasattr(qys, 'report_file_path') or not qys.report_file_path:
+            try:
+                qys_type = qys.get_type_display().replace(' ', '_')
+                qys_category = qys.get_category_display().replace(' ', '_')
+                created_date = qys.created_at.strftime('%d-%m-%Y')
+                report_filename = f"QYS_{qys_type}_{qys_category}_Apto{qys.apartment_number}_{created_date}_{qys.id}.pdf"
+                
+                print(f"DEBUG: Generating QYS PDF for email: {report_filename}")
+                report_path = generate_qys_report(qys, report_filename)
+                qys.report_file_path = report_path
+                print(f"DEBUG: QYS PDF generated: {report_path}")
+            except Exception as e:
+                print(f"ERROR: Failed to generate PDF report: {str(e)}")
+                # Continue without PDF attachment
+                qys.report_file_path = None
+
+        # Get admin users
+        admin_users = get_user_model().objects.filter(is_superuser=True)
+        print(f"DEBUG: Found {admin_users.count()} admin users")
+        
+        if not admin_users.exists():
+            print("WARNING: No admin users found to send notification")
+            return True  # Not really an error if no admins exist
+        
+        admin_subject = f"Nueva {qys.get_type_display()} - Departamento {qys.apartment_number}"
+        print(f"DEBUG: Email subject: {admin_subject}")
+        
+        # Render email content with error handling
+        try:
+            admin_message_html = render_to_string('qys_admin_notification_email.html', context)
+            print("DEBUG: Email template rendered successfully")
+        except Exception as e:
+            print(f"ERROR: Failed to render email template: {str(e)}")
+            # Fallback to simple HTML message
+            admin_message_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #4a90e2;">Nueva {qys.get_type_display()} Registrada</h2>
+                    
+                    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #4a90e2; margin: 20px 0;">
+                        <strong>Se ha registrado una nueva {qys.get_type_display().lower()} en el sistema que requiere su atención.</strong>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Usuario:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.user.get_full_name() or qys.user.username}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Departamento:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.apartment_number}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Tipo:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.get_type_display()}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Categoría:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.get_category_display()}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Fecha:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.created_at.strftime('%d/%m/%Y %H:%M')} hrs</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px; font-weight: bold; color: #495057;">Estado:</td>
+                            <td style="padding: 10px; color: #6c757d;">{qys.get_status_display()}</td>
+                        </tr>
+                    </table>
+                    
+                    <div style="background-color: #f7fafc; padding: 15px; border: 1px solid #e2e8f0; margin: 20px 0;">
+                        <strong>Descripción:</strong>
+                        <p style="margin: 10px 0 0 0; line-height: 1.6;">{qys.description}</p>
+                    </div>
+                    
+                    {f'<div style="background-color: #e8f4fd; padding: 15px; border: 1px solid #4a90e2; margin: 20px 0;"><strong>Archivo Adjunto:</strong> Se ha incluido un archivo con esta {qys.get_type_display().lower()}.</div>' if qys.attachment else ''}
+                    
+                    <div style="background-color: #e8f4fd; padding: 15px; border: 1px solid #4a90e2; margin: 20px 0;">
+                        <strong>Reporte PDF:</strong> Se ha adjuntado el reporte completo en formato PDF.
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #6c757d; font-size: 12px;">
+                        <p><strong>TORRES DEL MAUREL</strong><br>
+                        Sistema de Gestión de Comunicaciones<br>
+                        Este es un correo automático generado por el sistema</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        
+        admin_emails = list(admin_users.values_list('email', flat=True))
+        print(f"DEBUG: Admin emails: {admin_emails}")
+        
+        # Filter out empty emails
+        admin_emails = [email for email in admin_emails if email and email.strip()]
+        if not admin_emails:
+            print("WARNING: No valid admin email addresses found")
+            return False
+        
+        # Create plain text version as fallback
+        plain_text_message = f"""
+Nueva {qys.get_type_display()} Registrada - Torres del Maurel
+
+DETALLES:
+- Usuario: {qys.user.get_full_name() or qys.user.username}
+- Departamento: {qys.apartment_number}
+- Tipo: {qys.get_type_display()}
+- Categoría: {qys.get_category_display()}
+- Fecha: {qys.created_at.strftime('%d/%m/%Y %H:%M')} hrs
+- Estado: {qys.get_status_display()}
+
+DESCRIPCIÓN:
+{qys.description}
+
+{f'ARCHIVO ADJUNTO: {qys.attachment.name}' if qys.attachment else 'Sin archivos adjuntos.'}
+
+Se ha adjuntado el reporte PDF completo.
+
+---
+Este es un correo automático de Torres del Maurel.
+No responda directamente a esta dirección de correo.
+        """
+        
+        # Try to send email with enhanced error handling
+        try:
+            # Import here to avoid circular imports
+            from django.core.mail import EmailMultiAlternatives
+            
+            # Create email message with both text and HTML versions
+            admin_email = EmailMultiAlternatives(
+                subject=admin_subject,
+                body=plain_text_message,  # Plain text version
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=admin_emails
+            )
+            
+            # Attach HTML version
+            admin_email.attach_alternative(admin_message_html, "text/html")
+            
+            # Add QYS attachment if exists (original user attachment)
+            attachment_added = False
+            if qys.attachment:
+                try:
+                    if hasattr(qys.attachment, 'path') and os.path.exists(qys.attachment.path):
+                        admin_email.attach_file(qys.attachment.path)
+                        attachment_added = True
+                        print(f"DEBUG: Original attachment added: {qys.attachment.name}")
+                    else:
+                        print(f"WARNING: Original attachment file does not exist or path not available")
+                except Exception as e:
+                    print(f"ERROR: Failed to attach original file: {str(e)}")
+            
+            # Add PDF report attachment (MAIN FEATURE - following payment/expense pattern)
+            pdf_attached = False
+            if hasattr(qys, 'report_file_path') and qys.report_file_path:
+                try:
+                    pdf_path = os.path.join(settings.MEDIA_ROOT, qys.report_file_path)
+                    if os.path.exists(pdf_path):
+                        with open(pdf_path, 'rb') as pdf_file:
+                            admin_email.attach(
+                                f"Reporte_QYS_{qys.id}.pdf", 
+                                pdf_file.read(), 
+                                'application/pdf'
+                            )
+                        pdf_attached = True
+                        print(f"DEBUG: PDF report attached: {qys.report_file_path}")
+                    else:
+                        print(f"WARNING: PDF report file does not exist: {pdf_path}")
+                except Exception as e:
+                    print(f"ERROR: Failed to attach PDF report: {str(e)}")
+            
+            # Send email with connection error handling
+            try:
+                result = admin_email.send(fail_silently=False)
+                print(f"DEBUG: Email send result: {result}")
+                
+                if result == 1:
+                    print("SUCCESS: QYS notification email sent successfully")
+                    print(f"DEBUG: Attachments included - Original: {attachment_added}, PDF: {pdf_attached}")
+                    return True
+                else:
+                    print("ERROR: Email send returned 0 (failed)")
+                    return False
+                    
+            except Exception as e:
+                print(f"ERROR: Failed to send email: {str(e)}")
+                error_msg = str(e).lower()
+                
+                # Provide specific error guidance for common PythonAnywhere issues
+                if "authentication" in error_msg or "login" in error_msg:
+                    print("ERROR: Email authentication failed")
+                    print("SOLUTION: Check EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in settings")
+                elif "connection" in error_msg or "refused" in error_msg:
+                    print("ERROR: Email connection failed")
+                    print("SOLUTION: Check EMAIL_HOST and EMAIL_PORT settings")
+                    print("NOTE: PythonAnywhere free accounts have email restrictions")
+                elif "timeout" in error_msg:
+                    print("ERROR: Email timeout")
+                    print("SOLUTION: Check EMAIL_TIMEOUT setting or try a different SMTP server")
+                elif "ssl" in error_msg or "tls" in error_msg:
+                    print("ERROR: SSL/TLS configuration issue")
+                    print("SOLUTION: Check EMAIL_USE_TLS and EMAIL_USE_SSL settings")
+                elif "quota" in error_msg or "limit" in error_msg:
+                    print("ERROR: Email quota or rate limit exceeded")
+                    print("SOLUTION: Wait before sending more emails or upgrade PythonAnywhere account")
+                else:
+                    print(f"ERROR: Unexpected email error: {str(e)}")
+                
+                return False
+                
+        except ImportError as e:
+            print(f"ERROR: Failed to import email modules: {str(e)}")
+            return False
+        except Exception as e:
+            print(f"ERROR: Unexpected error in email preparation: {str(e)}")
+            return False
+            
+    except Exception as e:
+        print(f"CRITICAL ERROR in QYS email notification: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return False
