@@ -62,7 +62,7 @@
                                         <span class="document-date">{{ doc.date|date:"d/m/Y" }}</span>
                                     </span>
                                 </a>
-                                {% if user.is_staff %}
+                                {% if user.is_superuser %}
                                     <button onclick="deleteDocument({{ doc.id }})" class="delete-document-btn">🗑️</button>
                                 {% endif %}
                             </div>

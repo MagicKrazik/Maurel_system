@@ -203,6 +203,7 @@
     </div>
 
     <!-- NEW: System Maintenance Section -->
+    {% if user.is_superuser %}
     <div class="maintenance-section">
         <h2>Mantenimiento del Sistema</h2>
         
@@ -284,6 +285,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <div class="report-section">
         <h2>Generar Reporte de Balance Mensual</h2>
