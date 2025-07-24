@@ -80,6 +80,10 @@
     </div>
     {% endif %}
 
+    <div class = "pagar-button">
+        <button><a href="{% url 'pagos' %}">Registrar pago</a></button>
+    </div>
+
     <div class="debtors-section">
         <h2>Pagos pendientes</h2>
         {% if debtors %}
