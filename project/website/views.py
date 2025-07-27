@@ -6,7 +6,7 @@ from django.contrib import messages
 from .models import CustomUser, MonthlyFees, Announcement, InitialBalance
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .forms import UserProfileForm, SpanishPasswordChangeForm
+from .forms import UserProfileForm, SpanishPasswordChangeForm, ManualPaymentForm
 from django.utils import timezone
 from decimal import Decimal
 from .forms import PaymentUploadForm
@@ -1034,12 +1034,105 @@ def panel(request):
         # Rest of the existing panel logic remains the same...
         apartments = CustomUser.objects.filter(apartment_number__isnull=False).order_by('apartment_number')
         announcements = Announcement.objects.all().order_by('-created_at')
+        manual_payment_form = ManualPaymentForm()
 
         if request.method == 'POST':
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-            # Handle cleanup operations - NEW SECTION
-            if 'cleanup_action' in request.POST:
+            # Handle manual payment entry - NEW SECTION
+            if 'manual_payment' in request.POST:
+                manual_payment_form = ManualPaymentForm(request.POST, request.FILES)
+                
+                if manual_payment_form.is_valid():
+                    try:
+                        with transaction.atomic():
+                            print("=== SAVING MANUAL PAYMENT ===")
+                            payment = manual_payment_form.save(commit=False)
+                            payment.month = payment.payment_date.replace(day=1)
+                            print(f"Manual payment object created: {payment}")
+                            payment.save()
+                            print(f"Manual payment saved with ID: {payment.id}")
+
+                            # Update MonthlyFees
+                            monthly_fee, created = MonthlyFees.objects.get_or_create(
+                                user=payment.user, 
+                                month=payment.month
+                            )
+                            print(f"MonthlyFee {'created' if created else 'found'}: {monthly_fee}")
+                            
+                            monthly_fee.paid_amount += payment.amount_paid
+                            if monthly_fee.paid_amount >= monthly_fee.total_fee:
+                                monthly_fee.is_paid = True
+                            monthly_fee.save()
+                            print(f"MonthlyFee updated: paid_amount={monthly_fee.paid_amount}, is_paid={monthly_fee.is_paid}")
+
+                            # Generate PDF report
+                            report_filename = f"{payment.user.username}.{payment.month.strftime('%m.%Y')}.pdf"
+                            print(f"Generating manual payment PDF: {report_filename}")
+                            report_path = generate_payment_report(payment, report_filename)
+                            print(f"Manual payment PDF generated: {report_path}")
+                            
+                            # Save the report file path to the PaymentReport instance
+                            payment.report_file.name = report_path
+                            payment.save()
+                            print(f"Manual payment updated with report file: {payment.report_file.name}")
+
+                            # Create a Document object for the payment report with proper format
+                            admin_name = request.user.get_full_name() or request.user.username
+                            document = Document.objects.create(
+                                title=f"{payment.user.username} - {payment.payment_date.strftime('%d/%m/%Y')} - {admin_name}",
+                                document_type='pagos_mantenimiento',
+                                file=payment.report_file,
+                                date=payment.payment_date,
+                                uploaded_by=request.user
+                            )
+                            print(f"Manual payment document created: {document}")
+
+                            # Send confirmation emails (same as regular payments)
+                            print("Sending manual payment confirmation emails...")
+                            email_sent = send_payment_confirmation_emails(payment)
+                            print(f"Manual payment emails sent: {email_sent}")
+                            
+                            if is_ajax:
+                                response_data = {
+                                    'success': True, 
+                                    'message': f'Pago manual registrado exitosamente para departamento {payment.user.apartment_number}.'
+                                }
+                                if not email_sent:
+                                    response_data['warning'] = 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.'
+                                print(f"Returning manual payment AJAX response: {response_data}")
+                                return JsonResponse(response_data)
+                            else:
+                                messages.success(request, f'Pago manual registrado exitosamente para departamento {payment.user.apartment_number}.')
+                                if not email_sent:
+                                    messages.warning(request, 'El pago se registró correctamente pero hubo un problema al enviar los correos de confirmación.')
+                                return redirect('panel')
+                                
+                    except Exception as e:
+                        print(f"=== ERROR during manual payment processing: {str(e)} ===")
+                        import traceback
+                        print(f"Traceback: {traceback.format_exc()}")
+                        
+                        if is_ajax:
+                            return JsonResponse({
+                                'success': False, 
+                                'message': f'Error al procesar el pago manual: {str(e)}'
+                            })
+                        else:
+                            messages.error(request, f'Error al procesar el pago manual: {str(e)}')
+                            
+                else:
+                    print("=== MANUAL PAYMENT FORM VALIDATION FAILED ===")
+                    print(f"Form errors: {dict(manual_payment_form.errors)}")
+                    if is_ajax:
+                        response_data = {'success': False, 'errors': dict(manual_payment_form.errors)}
+                        print(f"Returning manual payment AJAX error response: {response_data}")
+                        return JsonResponse(response_data)
+                    else:
+                        messages.error(request, 'Error en el formulario de pago manual. Por favor, corrija los errores.')
+
+            # Handle cleanup operations - EXISTING SECTION
+            elif 'cleanup_action' in request.POST:
                 action = request.POST.get('cleanup_action')
                 exclude_superuser = request.POST.get('exclude_superuser') == 'on'
                 before_date = request.POST.get('before_date')
@@ -1281,6 +1374,7 @@ def panel(request):
             'cleanup_stats': cleanup_stats,
             'all_users': apartments,  # For cleanup user dropdown
             'start_date': start_date,  # Pass start date to template if needed
+            'manual_payment_form': manual_payment_form,  # NEW: Add manual payment form
         }
 
         return render(request, 'panel.html', context)

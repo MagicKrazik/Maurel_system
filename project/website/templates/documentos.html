@@ -48,18 +48,21 @@
                 {% if documents %}
                     <div class="document-list">
                         {% for doc in documents %}
-                            <div class="document-item">
+                            <div class="document-item" data-document-id="{{ doc.id }}">
                                 <a href="{{ doc.file.url }}" class="document-link" target="_blank">
                                     <span class="document-icon">📄</span>
                                     <span class="document-info">
                                         {% if section_name == 'pagos_mantenimiento' %}
-                                            <span class="document-title">{{ doc.uploaded_by.username }} - {{ doc.date|date:"d/m/Y" }}</span>
+                                            <!-- Enhanced logic for payment documents -->
+                                            <span class="document-title" data-title="{{ doc.title }}" data-uploader="{{ doc.uploaded_by.username }}" data-date="{{ doc.date|date:'d/m/Y' }}">
+                                                <!-- Default display, will be updated by JavaScript -->
+                                                {{ doc.uploaded_by.username }} - {{ doc.date|date:"d/m/Y" }}
+                                            </span>
                                         {% elif section_name == 'gastos_pasivos' %}
                                             <span class="document-title">{{ doc.title }}</span>
                                         {% else %}
                                             <span class="document-title">{{ doc.title }}</span>
                                         {% endif %}
-                                        <span class="document-date">{{ doc.date|date:"d/m/Y" }}</span>
                                     </span>
                                 </a>
                                 {% if user.is_superuser %}

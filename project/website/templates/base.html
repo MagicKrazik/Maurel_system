@@ -6,8 +6,10 @@
     <title>{% block title %}Torres del Maurel{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <!-- ADD THIS LINE: Universal Loading Overlay CSS -->
+    <!-- Universal Loading Overlay CSS -->
     <link rel="stylesheet" href="{% static 'css/universal-loading.css' %}">
+    <!-- NEW: Password Toggle CSS -->
+    <link rel="stylesheet" href="{% static 'css/password-toggle.css' %}">
     <link rel="icon" type="image/png" href="{% static 'images/building.png' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -62,7 +64,7 @@
         {% endblock %}
     </div>
 
-    <!-- Universal Loading Overlay - ADD THIS SECTION -->
+    <!-- Universal Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay loading-hidden">
         <div class="loading-content">
             <div class="loading-spinner"></div>
@@ -82,8 +84,10 @@
     </footer>
 
     <script src="{% static 'js/base.js' %}"></script>
-    <!-- ADD THIS LINE: Universal Form Handler -->
+    <!-- Universal Form Handler -->
     <script src="{% static 'js/universal-form-handler.js' %}"></script>
+    <!-- NEW: Password Toggle JavaScript -->
+    <script src="{% static 'js/password-toggle.js' %}"></script>
     {% block extra_js %}{% endblock %}  
 </body>
 </html>

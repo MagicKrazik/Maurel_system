@@ -39,7 +39,139 @@ document.addEventListener('DOMContentLoaded', function() {
         return cleanBaseUrl;
     }
 
-    // Cleanup functionality - NEW SECTION
+    // NEW: Manual Payment Form Handler
+    const manualPaymentForm = document.getElementById('manual-payment-form');
+    const manualPaymentSubmit = document.getElementById('manual-payment-submit');
+    const manualPaymentStatus = document.getElementById('manual-payment-status');
+
+    if (manualPaymentForm && manualPaymentSubmit) {
+        console.log('Setting up manual payment form handler...');
+        
+        manualPaymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Manual payment form submitted');
+            
+            // FIX: Enhanced button loading state
+            manualPaymentSubmit.disabled = true;
+            manualPaymentSubmit.innerHTML = '<span class="loading-spinner"></span>Procesando...';
+            
+            // Clear previous status
+            manualPaymentStatus.style.display = 'none';
+            manualPaymentStatus.className = 'status-container';
+            
+            // Prepare form data
+            const formData = new FormData(manualPaymentForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Get current date parameter for URL building
+            const currentDate = getCurrentDateParam();
+            const requestUrl = buildCleanURL(manualPaymentForm.action || window.location.href, currentDate);
+            
+            fetch(requestUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Manual payment response:', data);
+                
+                if (data.success) {
+                    // Success handling
+                    manualPaymentStatus.className = 'status-container success';
+                    manualPaymentStatus.textContent = data.message;
+                    manualPaymentStatus.style.display = 'block';
+                    
+                    // Show warning if emails failed
+                    if (data.warning) {
+                        manualPaymentStatus.textContent += ' ' + data.warning;
+                    }
+                    
+                    // Reset form
+                    manualPaymentForm.reset();
+                    
+                    // Optional: Reload page after delay to update apartment cards
+                    setTimeout(() => {
+                        if (confirm('¿Desea recargar la página para ver los cambios actualizados?')) {
+                            window.location.reload();
+                        }
+                    }, 3000);
+                    
+                } else {
+                    // Error handling
+                    manualPaymentStatus.className = 'status-container error';
+                    
+                    if (data.errors) {
+                        // Display field-specific errors
+                        let errorMessage = 'Error en el formulario:\n';
+                        Object.keys(data.errors).forEach(key => {
+                            errorMessage += `• ${key}: ${data.errors[key].join(', ')}\n`;
+                        });
+                        manualPaymentStatus.textContent = errorMessage;
+                    } else {
+                        manualPaymentStatus.textContent = data.message || 'Error al procesar el pago manual.';
+                    }
+                    manualPaymentStatus.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Manual payment error:', error);
+                manualPaymentStatus.className = 'status-container error';
+                manualPaymentStatus.textContent = 'Error de conexión. Por favor, inténtelo de nuevo.';
+                manualPaymentStatus.style.display = 'block';
+            })
+            .finally(() => {
+                // Re-enable submit button
+                manualPaymentSubmit.disabled = false;
+                manualPaymentSubmit.innerHTML = 'Registrar Pago Manual';
+            });
+        });
+        
+        // Add real-time validation for manual payment form
+        const manualPaymentFields = manualPaymentForm.querySelectorAll('input, select, textarea');
+        manualPaymentFields.forEach(field => {
+            field.addEventListener('input', function() {
+                // Clear error styling on input
+                if (this.style.borderColor === 'rgb(244, 67, 54)') {
+                    this.style.borderColor = '#4a4a4a';
+                }
+            });
+            
+            field.addEventListener('change', function() {
+                // Clear error styling on change
+                if (this.style.borderColor === 'rgb(244, 67, 54)') {
+                    this.style.borderColor = '#4a4a4a';
+                }
+            });
+        });
+        
+        // File input specific handling for manual payment
+        const manualFileInput = manualPaymentForm.querySelector('input[type="file"]');
+        if (manualFileInput) {
+            manualFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    
+                    if (file.size > maxSize) {
+                        manualPaymentStatus.className = 'status-container error';
+                        manualPaymentStatus.textContent = 'El archivo es demasiado grande. Máximo permitido: 10MB';
+                        manualPaymentStatus.style.display = 'block';
+                        this.value = '';
+                        this.style.borderColor = '#f44336';
+                    } else {
+                        this.style.borderColor = '#4a4a4a';
+                        manualPaymentStatus.style.display = 'none';
+                    }
+                }
+            });
+        }
+    }
+
+    // Cleanup functionality - EXISTING SECTION
     const cleanupForm = document.getElementById('cleanup-form');
     const previewBtn = document.getElementById('preview-btn');
     const resetBtn = document.getElementById('reset-btn');
@@ -127,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (data.payment_reports && data.payment_reports.length > 0) {
-                html += '<h4>Reportes de Pago (primeros 10):</h4>';
+                html += '<h4>Reportes de Pago (primeras 10):</h4>';
                 data.payment_reports.forEach(report => {
                     html += `<div class="preview-item">
                         <strong>${report.username}</strong> - ${report.month} - 

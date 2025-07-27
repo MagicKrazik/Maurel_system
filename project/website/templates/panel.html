@@ -202,7 +202,96 @@
         </div>
     </div>
 
-    <!-- NEW: System Maintenance Section -->
+    <!-- NEW: Manual Payment Entry Section -->
+    <div class="manual-payment-section">
+        <h2>Registro Manual de Pagos</h2>
+        <p class="section-description">Para residentes que envían comprobantes por WhatsApp</p>
+        
+        <div class="manual-payment-form-container">
+            <form id="manual-payment-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="manual_payment" value="1">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="{{ manual_payment_form.user.id_for_label }}">{{ manual_payment_form.user.label }}:</label>
+                        {{ manual_payment_form.user }}
+                        {% if manual_payment_form.user.help_text %}
+                            <small class="help-text">{{ manual_payment_form.user.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.user.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ manual_payment_form.amount_paid.id_for_label }}">{{ manual_payment_form.amount_paid.label }}:</label>
+                        {{ manual_payment_form.amount_paid }}
+                        {% if manual_payment_form.amount_paid.help_text %}
+                            <small class="help-text">{{ manual_payment_form.amount_paid.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.amount_paid.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ manual_payment_form.payment_date.id_for_label }}">{{ manual_payment_form.payment_date.label }}:</label>
+                        {{ manual_payment_form.payment_date }}
+                        {% if manual_payment_form.payment_date.help_text %}
+                            <small class="help-text">{{ manual_payment_form.payment_date.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.payment_date.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ manual_payment_form.payment_method.id_for_label }}">{{ manual_payment_form.payment_method.label }}:</label>
+                        {{ manual_payment_form.payment_method }}
+                        {% if manual_payment_form.payment_method.help_text %}
+                            <small class="help-text">{{ manual_payment_form.payment_method.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.payment_method.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="{{ manual_payment_form.proof_of_payment.id_for_label }}">{{ manual_payment_form.proof_of_payment.label }}:</label>
+                        {{ manual_payment_form.proof_of_payment }}
+                        {% if manual_payment_form.proof_of_payment.help_text %}
+                            <small class="help-text">{{ manual_payment_form.proof_of_payment.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.proof_of_payment.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label for="{{ manual_payment_form.comments.id_for_label }}">{{ manual_payment_form.comments.label }}:</label>
+                        {{ manual_payment_form.comments }}
+                        {% if manual_payment_form.comments.help_text %}
+                            <small class="help-text">{{ manual_payment_form.comments.help_text }}</small>
+                        {% endif %}
+                        {% for error in manual_payment_form.comments.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="manual-payment-submit" class="btn btn-primary">
+                        Registrar Pago Manual
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="manual-payment-status" class="status-container"></div>
+    </div>
+
+    <!-- System Maintenance Section -->
     {% if user.is_superuser %}
     <div class="maintenance-section">
         <h2>Mantenimiento del Sistema</h2>
