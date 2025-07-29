@@ -1903,6 +1903,25 @@ def generate_qys_report_view(request, qys_id):
         return redirect('qys')
 
 
+# Optional: Add this function for enhanced status checking
+@login_required
+def check_processing_status(request):
+    """
+    Optional endpoint for checking processing status
+    This is for future enhancements and doesn't affect existing functionality
+    """
+    payment_id = request.GET.get('payment_id')
+    qys_id = request.GET.get('qys_id')
+    
+    # For now, just return a simple response
+    # This can be enhanced later if you want to track processing status
+    return JsonResponse({
+        'success': True,
+        'status': 'completed',
+        'message': 'Status checking available in future version'
+    })
+
+
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm
     template_name = 'password_reset_form.html'

@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Profile.js v2.0 initialized successfully');
             
         } catch (error) {
-            console.error('❌ Error initializing profile.js:', error);
+            console.error('❌ Error initializing profile.js:', error);  
         }
     }
     

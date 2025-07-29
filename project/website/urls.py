@@ -26,5 +26,6 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(template_name='password_reset_confirm.html',success_url='/reset/done/'), name='password_reset_confirm'),
     path('reset/done/', CustomPasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     path('generate_monthly_balance_report/', views.generate_monthly_balance_report, name='generate_monthly_balance_report'),
+    path('api/processing-status/', views.check_processing_status, name='check_processing_status'),
 
 ]
