@@ -273,10 +273,12 @@ def dashboard(request):
                 yearly_balance_data.append(float(running_balance))
                 yearly_labels.append(month_names[month - 1])
             
-            period_balance = float(running_balance)
+            # For full year: period_balance = net balance for the entire year
+            period_balance = period_income_total - period_expenses_total
+            cumulative_balance = float(running_balance)
             
         else:
-            # Calculate for specific month
+            # Calculate for specific month only
             if selected_year > current_date.year or (selected_year == current_date.year and selected_month <= current_month):
                 period_income_total = float(MonthlyFees.get_total_paid_amount(selected_year, selected_month))
                 period_expenses_total = float(ExpenseReport.objects.filter(
@@ -287,7 +289,10 @@ def dashboard(request):
                 period_income_total = 0
                 period_expenses_total = 0
             
-            # For specific month, we still need to calculate cumulative balance up to that month
+            # For specific month: period_balance = net balance for ONLY that month
+            period_balance = period_income_total - period_expenses_total
+            
+            # But we still need to calculate cumulative balance up to that month for charts
             for month in range(start_month, selected_month + 1):
                 if selected_year > current_date.year or (selected_year == current_date.year and month <= current_month):
                     month_income = float(MonthlyFees.get_total_paid_amount(selected_year, month))
@@ -311,9 +316,9 @@ def dashboard(request):
                 yearly_balance_data.append(float(running_balance))
                 yearly_labels.append(month_names[month - 1])
             
-            period_balance = float(running_balance)
+            cumulative_balance = float(running_balance)
 
-        yearly_balance = float(running_balance)
+        yearly_balance = cumulative_balance  # This is for charts (cumulative)
 
         # Generate year range for dropdown
         available_years = []
@@ -345,8 +350,8 @@ def dashboard(request):
             'initial_balance': float(initial_balance),
             'period_income_total': period_income_total,
             'period_expenses_total': period_expenses_total,
-            'period_balance': period_balance,
-            'yearly_balance': yearly_balance,
+            'period_balance': period_balance,  # This is the net balance for the selected period
+            'yearly_balance': yearly_balance,  # This is cumulative balance for charts
             'yearly_income_data': json.dumps(yearly_income_data),
             'yearly_expenses_data': json.dumps(yearly_expenses_data),
             'yearly_balance_data': json.dumps(yearly_balance_data),
@@ -363,8 +368,7 @@ def dashboard(request):
     except Exception as e:
         logger.error(f"Error in dashboard view: {str(e)}")
         messages.error(request, "Error al cargar el dashboard. Por favor, inténtelo de nuevo.")
-        return redirect('home')
-    
+        return redirect('home')    
 
 
 
